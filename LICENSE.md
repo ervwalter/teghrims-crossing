@@ -2,7 +2,7 @@
 
 The code in this repository is licensed under the MIT License.  Markdown files are not subject to this license.
 
-Copyright (c) 2025 Teghrim's Crossing
+Copyright (c) 2025 Erv Walter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
