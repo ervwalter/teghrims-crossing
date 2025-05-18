@@ -1,0 +1,41 @@
+# Teghrim's Crossing - A Narrative Tale
+
+### Across Winding Roads and Wild Frontiers
+
+Night fell heavy over the caravan trail, casting ink-black shadows beneath the ancient, tangled forest. Each flicker of torchlight danced upon wary faces, and the rhythmic wheel-grind echoed the tension of strangers sharing the road. A new venture had begun—several small groups, coaxed by different fates, now found themselves converging on the road to Teghrim's Crossing, uncertain of what awaited beyond the next bend.
+
+***
+
+The journey began apart. Arnór Josefson, a broad-shouldered Norn from Solstheim, boarded a sturdy grain-laden ship, the salt wind stinging his cheeks beneath a thick mane of hair. He mingled easily with the crew, breaking bread and introducing himself with the warmth of an old skald, challenging any willing soul to a wager with dice. While most sailors were busy or indifferent, his laughter brightened the loneliest corners of the deck, passing the days in a convivial haze broken only by the cautious observation of a singular, sharply dressed noblewoman—Sylvia Mournhold, steel-eyed and encased in elegant mail, blades never far from her reach.
+
+Beyond the sea, Kotal, scaled and serene, traversed the winding trade routes of the Jade Kingdoms. His manner was reserved, his journey prompted by the divine breath of Gaia—known to him as Zapotlatena—and a cryptic call marked on ancient stones. He exchanged few words, but when pressed by the elderly Lynn Chong, shared his purpose in poetic riddles, drawing curious glances but never quite inviting true understanding. Lynn, ever the gentle companion, offered tea and stories in return, spinning the tense nights into rare moments of calm amidst the ever-watchful armed caravan.
+
+Farther west, in the new dwarven port of Menoth-Derith—a city still growing, stone and timber pressed hard against steep cliffs—Bruldin Grimstone, a grim Duergar barbarian from Unak'Mel-Duin, waited. Skilled in the ways of the sea, he watched the influx of Norn sailors and traders with wary respect—centuries-old grudges and recent peace cooling to a mutual, if grudging, acknowledgment. The arrival of another human cast in the plain livery of a mercenary, and a lizardess journeying from the east, signaled the coalescence of disparate fates.
+
+At a lonely caravanserai further along the trail, Aurelia, a dhampir of shadowed aspect, sat quietly, her presence unsettling in the dim solitude. She waited at the crossroads, vigilant and still, surrounded by the eerie remnants of goblin-deterring wards. When night brought intruders—three sniveling, feral goblin youths—she dispatched them without mercy or hesitation. Their lowly blood, while unsatisfying, staved off her hunger, and their bodies were dealt with as efficiently as the threat they posed. The next day, a patrol of armored mercenaries found her waiting. Questions about her strange ancestry drew only vague replies; in these lands, dhampir were uncommon but not monstrous—noble outcasts rather than hunted beasts.
+
+***
+
+It was not long before all five found themselves together, contracted as rearguard for a trading caravan bound for Teghrim's Crossing. The journey was perilous—forests gave way to open plains, and with every undulating mile, the sense of looming danger grew sharper. Goblin and orc territory pressed close. One afternoon, a herd of wild aurochs thundered down on the caravan, their massive horns shattering carts and sowing chaos. Bruldin's maul swung with punishing force, forcing the beasts to reconsider. Arnór's voice boomed across the plain as he tried—less successfully—to cow the creatures with raw bluster. Kotal and others tried mystic calm, song, and intimidation, but the chaos could be barely managed, the caravan only narrowly escaping with battered wagons and bruised egos.
+
+As the party neared the trade outpost, each night became a wary vigil; goblin totems were repaired and enhanced by those with knowledge of such superstitions, and survivalists wove cunning snares in the shadowed undergrowth. Kotal, his faith and discipline blending, worked alongside others in their attempts to prepare—the site's defenses now ringed with sharpened stakes, arcane wards, and whispered prayers to gods new and old.
+
+That watchfulness proved prudent. Late one night, the camp was beset by a squad of goblins led by a surly orc demanding tribute for passage. When bluffs and threats failed, violence erupted—the party sprang into coordinated action. Bruldin's maul sang, shattering goblins; Aurelia's hand crossbow flashed, felling a goblin with a bolt through the eye as chaos swirled. Arnór's voice, now steeled with purpose, barked warnings and encouragement, his tattoos glowing in the firelight, while Kotal traded blows with stoic precision beside Lynn and Sylvia.
+
+The orc—hulking and confident—pressed his attack, but teamwork and tenacity prevailed. When the dust and blood had settled, the would-be tollkeeper lay dead, his minions scattered or slain. Wounds were tended, and as dawn broke, gratitude for survival mingled with the fatigue of battle. The caravan pressed on, spirits bolstered, their reputation among the mercenaries rising with each mile.
+
+***
+
+As the days and dangers wore on, bonds began to form—not through forced sharing of backstories, but in the fire-lit lull between trials. Around a crowded campfire, Kotal played quiet melodies on a lute, joined by Arnór’s unskilled but hearty flute and Bruldin’s tales of slayer cults and battles past. Sylvia introduced herself formally at last; Lynn, ever gracious, brewed aromatic tea and recounted legends of shrines and ruined temples in the wild east. Aurelia folded paper animals in dreamy solitude, her origami birds flickering in the firelight. Slowly, stories emerged: quests for knowledge, family honor, the thrill of battle, and divine callings. Even silent Kotal, when asked, spoke of visions—moss-eaten carvings, broken swords in half-remembered dreams, and the pursuit of meaning in the whispers of an ancient goddess.
+
+Strained camaraderie grew with the miles. Disputes between Norn and Duergar were set aside, replaced by mutual respect. Each recognized the value of another sword, spell, or song in the fray.
+
+The wilderness tested them again—an ambush by snotlings and goblins gave way to a larger, bloodier fight as the caravan pushed through an orchestrated goblin assault, deadly riders mounted on skittering spiders and bounding squigs nipping at their carts. The rearmost wagons became a chaos of darting bodies, magic blades, sonic spells, and flying javelins; carts jarred and wagons lurched as drivers whipped their horses hard. Aurelia fell twice but was revived by Lynn's steady hand. The threat passed only when the party’s determination broke the assault, sending goblins scattering.
+
+***
+
+Finally, with the scent of river water heavy in the air, their battered caravan crested a wooded rise. Before them, gleaming in the pale sunlight, sprawled Teghrim’s Crossing—a small fortress town straddling a mighty bridge, arches spanning a river as broad as ambition. Guardhouses and traders bustled, the sturdy stonework a silent promise of survival amid hostile lands.
+
+As the party rolled into the bridge settlement, gold reward for their stalwart defense ringing in pouches, it was clear this dissonant group—Norn, Duergar, Slaan, Dhampir, and human—had survived their first crucible together. As the sun set and another night fell across the crossing, fate’s threads had drawn them tighter still. The true perils of wild Septerra lay ahead, but for tonight, the fires burned warm, and old grudges and new friendships shaped by shared danger were kindling something none could yet name.
+
+***
