@@ -268,7 +268,7 @@ def main():
                 previous_context += "## End of Previous Summaries\n\n"
 
             agent = Agent(
-                name=f"Summarizer-{prompt_file}",
+                name=f"{prompt_file}",
                 instructions=prompt_content,
                 model="gpt-4.1",
                 tools=[list_reference_files, retrieve_reference_files]
