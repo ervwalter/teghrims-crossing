@@ -179,7 +179,7 @@ def generate_missing_images_for_summaries():
         prompts = [p.strip() for p in content.split("---") if p.strip()]
         for idx, prompt in enumerate(prompts, 1):
             # Generate two versions (a and b) for each prompt
-            for version in ['a', 'b']:
+            for version in ['a']:
                 image_filename = f"{os.path.splitext(md_file)[0]}-{idx}{version}.png"
                 image_path = os.path.join(images_dir, image_filename)
                 if os.path.exists(image_path):
