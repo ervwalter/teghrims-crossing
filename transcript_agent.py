@@ -11,7 +11,7 @@ import asyncio
 import re
 import yaml
 import base64
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from agents import Agent, Runner, function_tool
 try:
     from openai import OpenAI
@@ -92,6 +92,138 @@ def retrieve_reference_files(filenames: List[str]) -> dict:
             result[filename] = f"File not found: {filename}"
     
     return result
+
+@function_tool
+def list_memory_categories() -> List[Dict[str, str]]:
+    """
+    List all available memory categories with their descriptions.
+    Returns a list of dictionaries containing category name and description for each memory file.
+    """
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    memory_dir = os.path.join(base_dir, "Memory")
+    
+    if not os.path.exists(memory_dir):
+        return [{"category": "error", "description": "Memory directory not found"}]
+    
+    result = []
+    for filename in [f for f in os.listdir(memory_dir) if f.endswith(".md")]:
+        file_path = os.path.join(memory_dir, filename)
+        category = os.path.splitext(filename)[0]  # Remove .md extension
+        description = "No description available"
+        
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                # Extract frontmatter
+                match = re.match(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+                if match:
+                    frontmatter = match.group(1)
+                    try:
+                        meta = yaml.safe_load(frontmatter)
+                        if meta and isinstance(meta, dict):
+                            if 'description' in meta:
+                                description = meta['description']
+                            elif 'title' in meta:
+                                description = f"Memory category for {meta['title']}"
+                    except Exception:
+                        pass
+        except Exception as e:
+            description = f"Error reading file: {str(e)}"
+            
+        result.append({"category": category, "description": description})
+    
+    return result
+
+
+@function_tool
+def retrieve_memory_categories(categories: List[str]) -> Dict[str, str]:
+    """
+    Retrieve the contents of one or more memory categories.
+    
+    Args:
+        categories: A list of category names to retrieve from the Memory directory.
+                   Do not include paths or extensions, just the base name (e.g., 'characters', 'locations').
+    
+    Returns:
+        A dictionary mapping category names to their contents (excluding frontmatter).
+    """
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    memory_dir = os.path.join(base_dir, "Memory")
+    
+    if not os.path.exists(memory_dir):
+        return {"error": "Memory directory not found"}
+    
+    result = {}
+    for category in categories:
+        filename = f"{category}.md"
+        file_path = os.path.join(memory_dir, filename)
+        
+        if os.path.exists(file_path) and filename.endswith(".md"):
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    # Remove frontmatter
+                    content_without_frontmatter = re.sub(r'^---\s*\n.*?\n---\s*\n', '', content, flags=re.DOTALL)
+                    result[category] = content_without_frontmatter.strip()
+            except Exception as e:
+                result[category] = f"Error reading file: {str(e)}"
+        else:
+            result[category] = f"Memory category not found: {category}"
+    
+    return result
+
+
+@function_tool
+def update_memory_categories(updates: Dict[str, str]) -> Dict[str, str]:
+    """
+    Update the contents of one or more memory categories.
+    
+    Args:
+        updates: A dictionary mapping category names to their new contents.
+                The keys should be category names without extensions (e.g., 'characters', 'locations').
+                The values should be the new content for each category (excluding frontmatter).
+    
+    Returns:
+        A dictionary with status messages for each updated category.
+    """
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    memory_dir = os.path.join(base_dir, "Memory")
+    
+    if not os.path.exists(memory_dir):
+        return {"error": "Memory directory not found"}
+    
+    result = {}
+    for category, new_content in updates.items():
+        filename = f"{category}.md"
+        file_path = os.path.join(memory_dir, filename)
+        
+        if os.path.exists(file_path) and filename.endswith(".md"):
+            try:
+                # Read existing file to preserve frontmatter
+                with open(file_path, "r", encoding="utf-8") as f:
+                    existing_content = f.read()
+                
+                # Extract frontmatter
+                frontmatter_match = re.match(r'^---\s*\n(.*?)\n---\s*\n', existing_content, re.DOTALL)
+                if frontmatter_match:
+                    frontmatter = f"---\n{frontmatter_match.group(1)}\n---\n\n"
+                    # Combine frontmatter with new content
+                    updated_content = frontmatter + new_content
+                    
+                    # Write updated content back to file
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(updated_content)
+                    
+                    result[category] = "Successfully updated"
+                else:
+                    result[category] = "Error: Could not find frontmatter in existing file"
+            except Exception as e:
+                result[category] = f"Error updating file: {str(e)}"
+        else:
+            result[category] = f"Memory category not found: {category}"
+    
+    return result
+
 
 def get_previous_summaries(prompt_base: str, transcript_date: str, max_previous: int = 2) -> List[dict]:
     """
@@ -239,8 +371,11 @@ def main():
         with open(transcript_path, "r", encoding="utf-8") as f:
             transcript_content = f.read()
             
+        # Sort prompt files to ensure session-summary.md is processed last
+        sorted_prompt_files = sorted(prompt_files, key=lambda x: x == "session-summary.md")
+        
         # Process each prompt for this transcript
-        for prompt_file in prompt_files:
+        for prompt_file in sorted_prompt_files:
             # Generate the expected output filename
             prompt_base = os.path.splitext(prompt_file)[0]
             summary_filename = f"{prompt_base}-{transcript_date}.md"
@@ -267,21 +402,48 @@ def main():
                     previous_context += f"### Summary from {summary['date']}\n\n{summary['content']}\n\n"
                 previous_context += "## End of Previous Summaries\n\n"
 
+            # Determine which tools to include based on the prompt file
+            tools = [list_reference_files, retrieve_reference_files, list_memory_categories, retrieve_memory_categories]
+            
+            # Only include update_memory_categories for session-summary.md
+            if prompt_file == "session-summary.md":
+                tools.append(update_memory_categories)
+            
             agent = Agent(
                 name=f"{prompt_file}",
                 instructions=prompt_content,
                 model="gpt-4.1",
-                tools=[list_reference_files, retrieve_reference_files]
+                tools=tools
             )
 
             async def run_agent():
                 # Create a prompt that includes previous summaries as context
+                # Base prompt for all summaries
                 user_input = (
-                    "Please use the provided tools to access reference materials before processing this transcript. "
-                    "First list all available reference files, then retrieve and review relevant ones to ensure accurate "
-                    "information in your output. After you've reviewed the references, create a clean final output "
+                    "Please use the provided tools to access reference materials and memory categories before processing this transcript. "
+                    "First list all available reference files and memory categories, then retrieve and review relevant ones to ensure accurate "
+                    "information in your output. After you've reviewed the references and memories, create a clean final output "
                     "without mentioning your tool usage steps."
                 )
+                
+                # Add special instructions for session-summary.md
+                if prompt_file == "session-summary.md":
+                    user_input = (
+                        "Please use the provided tools to access reference materials and memory categories before processing this transcript. "
+                        "First list all available reference files and memory categories, then retrieve and review relevant ones to ensure accurate "
+                        "information in your output. After creating your summary, you MUST use the update_memory_categories tool to update the memory "
+                        "files with new information discovered in this transcript. Specifically: "
+                        "1) Use retrieve_memory_categories to first get the current content of each memory category "
+                        "2) Then use update_memory_categories to update each relevant category with new information while preserving existing content "
+                        "3) Update characters.md with new characters or character development "
+                        "4) Update locations.md with new locations or location details "
+                        "5) Update plot_elements.md with quest progress and story developments "
+                        "6) Update player_decisions.md with significant choices and their consequences "
+                        "7) Update world_state.md with changes to the political or environmental situation "
+                        "8) Update items_resources.md with new items or resources acquired "
+                        "9) Update knowledge_lore.md with new lore or discovered secrets "
+                        "Ensure your final output does not mention your tool usage steps."
+                    )
                 
                 # Add previous summaries context if available
                 if previous_context:
