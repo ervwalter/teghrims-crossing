@@ -12,6 +12,7 @@ import asyncio
 
 from agents import Agent, Runner
 from .reference_utils import get_player_roster, list_reference_files, retrieve_reference_files
+from .memory_tools import list_articles, get_articles, update_article
 
 def get_slice_content(slice_path: str) -> str:
     """
@@ -84,7 +85,7 @@ def combine_slice_contents(slices: List[Dict]) -> str:
     return combined_text
 
 
-async def process_combined_slices(combined_slices: str, openai_api_key: str, model: str = "gpt-4.1") -> str:
+async def process_combined_slices(combined_slices: str, openai_api_key: str, session_date: str) -> str:
     """
     Process combined slices using OpenAI's Agent SDK.
     
@@ -103,22 +104,28 @@ async def process_combined_slices(combined_slices: str, openai_api_key: str, mod
     # Define the tools for the agent
     tools = [
         list_reference_files,
-        retrieve_reference_files
+        retrieve_reference_files,
+        list_articles,
+        get_articles
     ]
     
     agent = Agent(
         name="SessionDigestAgent",
-        instructions="You are THE EDITOR, an expert continuity wrangler for tabletop RPG session transcripts. IMPORTANT: Always begin by using list_reference_files to see what reference documents are available, and then use retrieve_reference_files to access the player-roster.md and any other relevant references. These references are critical for correctly identifying and normalizing character names and other entities.",
-        model=model,
+        instructions=f"You are THE EDITOR, an expert continuity wrangler for tabletop RPG session transcripts. IMPORTANT: You are processing a session from {session_date}. Always begin by using list_reference_files to see what reference documents are available, and use retrieve_reference_files to access the player-roster.md and any other relevant references. These references are critical for correctly identifying and normalizing character names and other entities. Use list_articles and get_article to read the campaign memory as it existed before this session.",
+        model="gpt-4.1",
         tools=tools
     )
     
-    prompt = """You are **THE EDITOR**, an expert continuity wrangler.
+    prompt = f"""You are **THE EDITOR**, an expert continuity wrangler for a D&D campaign called "Teghrim's Crossing".
+
+IMPORTANT: You are processing a session from {session_date}.
 
 BEGIN BY:
-1. Using the list_reference_files tool to see all available reference documents
-2. Using retrieve_reference_files tool to read the player-roster.md and any other relevant references
-3. Studying these references carefully to understand character names, locations, and important entities
+1. Using list_articles to see all available campaign-memory articles
+2. Using get_articles with a list of slugs and the cutoff_date="{session_date}" to read the current state of multiple articles at once
+3. Using list_reference_files to see all available reference documents
+4. Using retrieve_reference_files tool to read the player-roster.md and any other relevant references
+5. Studying these references carefully to understand character names, locations, and important entities
 
 INPUT  
 • A series of slice summaries produced by THE RECORDER.  
@@ -149,13 +156,16 @@ Create one **Session Digest** that:
 - **Do NOT invent new facts.** Only rearrange, merge, deduplicate, and correct.  
 - All events from individual slices should be included in the final digest so do not remove or merge events unless they are duplicates or clearly irrelevant.
 - If two events are identical or one is a shorter version of the other, keep the more complete line.  
-- When assist rolls appear in a later slice, fold them into the primary **ROLL** entry.  
 - If a **COMBAT** line has an associated **ROLL**, keep both.  
 - Number the **Chronological Log** starting at 1 with no gaps.  
 - After the log, compile a deduplicated **Entities** section.  
-- Append unresolved or unclear items to **Questions for GM**.  
-- **IMPORTANT: Before beginning, use the list_reference_files tool to see what reference documents are available, then use retrieve_reference_files to access specific files that contain character info, places, or lore relevant to this session.**
-- **You MUST use these tools to help normalize entity names and ensure consistency.**
+- Append unresolved or unclear items to **Ambiguities & Uncertainties**.  
+- **IMPORTANT: Before beginning:**
+  1. Use list_articles to see all available campaign memory articles
+  2. Use get_articles to retrieve relevant articles with cutoff_date="{session_date}"
+  3. Use list_reference_files to see what reference documents are available
+  4. Use retrieve_reference_files to access player-roster.md and other files containing information from the GM about the campaign world
+- **You MUST use these tools to normalize entity names and ensure consistency with existing campaign information.**
 
 ---
 
@@ -191,14 +201,63 @@ Create one **Session Digest** that:
 
 
 
-def combine_session_slices(session_date: str, openai_api_key: str, model: str = "gpt-4.1") -> Optional[str]:
+def update_articles_from_digest(session_date: str, openai_api_key: str, digest_content: str) -> None:
+    """
+    Use an agent to process the session digest and update campaign memory articles accordingly.
+    Args:
+        session_date: The date of the session in YYYY-MM-DD format
+        openai_api_key: OpenAI API key
+        digest_path: Path to the session digest file
+    """
+    import asyncio
+    from agents import Agent, Runner
+
+
+    # Tools for updating articles
+    tools = [list_articles, get_articles, update_article, list_reference_files, retrieve_reference_files]
+
+    agent = Agent(
+        name="ArticleUpdaterAgent",
+        instructions=(
+            f"You are the CAMPAIGN MEMORY UPDATER. Your job is to read the session digest for a given session "
+            f"and update the campaign memory articles to reflect any new or changed information.\n"
+            f"Rules:\n"
+            f"- Use list_articles and get_articles to review the current state of the memory.\n"
+            f"- Use update_article to add new information or revise details as needed.\n"
+            f"- Be careful not to overwrite important existing information.\n"
+            f"- Reference the digest and existing memory to ensure continuity and accuracy.\n"
+            f"- Only update articles if there is clear, new, or corrected information from the digest.\n"
+            f"- Do NOT remove or overwrite important information that is not contradicted by the digest.\n"
+            f"- If uncertain, make your best effort to update the article using reasonable inference from the digest and prior memory.\n"
+            f"- Document all changes in the article body, maintaining good formatting.\n"
+            f"- You may use list_reference_files and retrieve_reference_files to access reference documents provided by the GM. These may help you understand the general campaign world and ensure your updates are accurate and consistent.\n"
+        ),
+        model="gpt-4.1",
+        tools=tools
+    )
+
+    prompt = (
+        """
+        Please retrieve and update every campaign memory article based on the session digest below.
+        \n---\n
+        SESSION DIGEST for {session_date}:\n\n"""
+        f"""{digest_content}"""
+    )
+
+    async def run_update():
+        result = await Runner.run(agent, prompt)
+        print("Article update agent output:\n", result.final_output)
+
+    asyncio.run(run_update())
+
+def combine_session_slices(session_date: str, openai_api_key: str) -> Optional[str]:
+
     """
     Combine all slices for a session and process them using the Agent SDK.
     
     Args:
         session_date: The date of the session in YYYY-MM-DD format
         openai_api_key: OpenAI API key
-        model: The OpenAI model to use
         
     Returns:
         Optional[str]: Path to the session bible file, or None if an error occurred
@@ -226,27 +285,29 @@ def combine_session_slices(session_date: str, openai_api_key: str, model: str = 
     try:
         # Process combined slices
         print(f"Processing combined slices for session {session_date}...")
-        session_digest = asyncio.run(process_combined_slices(combined_slices, openai_api_key, model))
+        session_digest = asyncio.run(process_combined_slices(combined_slices, openai_api_key, session_date))
         
         # Save the result
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(session_digest)
         
         print(f"Session digest created successfully: {output_file}")
+        # After digest creation, update articles based on the digest
+        update_articles_from_digest(session_date, openai_api_key, session_digest)
         return output_file
+
     
     except Exception as e:
         print(f"Error creating session digest: {str(e)}")
         return None
 
 
-def process_all_sessions_to_digests(openai_api_key: str, model: str = "gpt-4.1") -> None:
+def process_all_sessions_to_digests(openai_api_key: str) -> None:
     """
     Process all sessions with slices into session digests.
     
     Args:
         openai_api_key: OpenAI API key
-        model: The OpenAI model to use
     """
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     slices_dir = os.path.join(base_dir, "Transcripts", "Slices")
@@ -279,7 +340,7 @@ def process_all_sessions_to_digests(openai_api_key: str, model: str = "gpt-4.1")
         
         print(f"Processing session {session_date}...")
         try:
-            combine_session_slices(session_date, openai_api_key, model)
+            combine_session_slices(session_date, openai_api_key)
             print(f"Digest creation complete for {session_date}!\n")
         except Exception as e:
             print(f"Error processing session {session_date}: {str(e)}\n")

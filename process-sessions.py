@@ -36,7 +36,6 @@ def main():
     parser = argparse.ArgumentParser(description="Process audio files to generate transcripts, slice them, and combine into session bibles.")
     parser.add_argument('--timeout', type=int, default=300, help='Timeout in seconds for API calls (default: 300)')
     parser.add_argument('--retries', type=int, default=2, help='Maximum number of retry attempts for API calls (default: 2)')
-    parser.add_argument('--model', type=str, default="gpt-4.1", help='OpenAI model to use for combining slices (default: gpt-4.1)')
     args = parser.parse_args()
     
     # Set up paths
@@ -57,7 +56,7 @@ def main():
         
         # Step 3: Combine slices into session digests
         print("Step 3: Creating session digests from slices...")
-        process_all_sessions_to_digests(openai_api_key, args.model)
+        process_all_sessions_to_digests(openai_api_key)
         print("\nSession digest creation complete!\n")
         
         print("All processing complete!")
