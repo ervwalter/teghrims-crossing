@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Combine multiple markdown files from the Summaries folder and convert them to DOCX.
 

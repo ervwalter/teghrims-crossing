@@ -174,26 +174,32 @@ def retrieve_memory_categories(categories: List[str]) -> Dict[str, str]:
 
 
 @function_tool
-def update_memory_categories(updates: Dict[str, str]) -> Dict[str, str]:
+def update_memory_categories(categories: List[str], contents: List[str]) -> List[Dict[str, str]]:
     """
     Update the contents of one or more memory categories.
     
     Args:
-        updates: A dictionary mapping category names to their new contents.
-                The keys should be category names without extensions (e.g., 'characters', 'locations').
-                The values should be the new content for each category (excluding frontmatter).
+        categories: A list of category names to update (e.g., 'characters', 'locations').
+        contents: A list of new contents for each category, in the same order as categories.
+                 The content should exclude frontmatter.
     
     Returns:
-        A dictionary with status messages for each updated category.
+        A list of dictionaries with category names and status messages.
     """
     base_dir = os.path.dirname(os.path.abspath(__file__))
     memory_dir = os.path.join(base_dir, "Memory")
     
     if not os.path.exists(memory_dir):
-        return {"error": "Memory directory not found"}
+        return [{"category": "error", "status": "Memory directory not found"}]
     
-    result = {}
-    for category, new_content in updates.items():
+    result = []
+    
+    # Ensure categories and contents are the same length
+    if len(categories) != len(contents):
+        return [{"category": "error", "status": "Categories and contents lists must be the same length"}]
+    
+    for i, category in enumerate(categories):
+        new_content = contents[i]
         filename = f"{category}.md"
         file_path = os.path.join(memory_dir, filename)
         
@@ -214,13 +220,13 @@ def update_memory_categories(updates: Dict[str, str]) -> Dict[str, str]:
                     with open(file_path, "w", encoding="utf-8") as f:
                         f.write(updated_content)
                     
-                    result[category] = "Successfully updated"
+                    result.append({"category": category, "status": "Successfully updated"})
                 else:
-                    result[category] = "Error: Could not find frontmatter in existing file"
+                    result.append({"category": category, "status": "Error: Could not find frontmatter in existing file"})
             except Exception as e:
-                result[category] = f"Error updating file: {str(e)}"
+                result.append({"category": category, "status": f"Error updating file: {str(e)}"})
         else:
-            result[category] = f"Memory category not found: {category}"
+            result.append({"category": category, "status": f"Memory category not found: {category}"})
     
     return result
 
@@ -429,20 +435,25 @@ def main():
                 # Add special instructions for session-summary.md
                 if prompt_file == "session-summary.md":
                     user_input = (
-                        "Please use the provided tools to access reference materials and memory categories before processing this transcript. "
-                        "First list all available reference files and memory categories, then retrieve and review relevant ones to ensure accurate "
-                        "information in your output. After creating your summary, you MUST use the update_memory_categories tool to update the memory "
-                        "files with new information discovered in this transcript. Specifically: "
-                        "1) Use retrieve_memory_categories to first get the current content of each memory category "
-                        "2) Then use update_memory_categories to update each relevant category with new information while preserving existing content "
-                        "3) Update characters.md with new characters or character development "
-                        "4) Update locations.md with new locations or location details "
-                        "5) Update plot_elements.md with quest progress and story developments "
-                        "6) Update player_decisions.md with significant choices and their consequences "
-                        "7) Update world_state.md with changes to the political or environmental situation "
-                        "8) Update items_resources.md with new items or resources acquired "
-                        "9) Update knowledge_lore.md with new lore or discovered secrets "
-                        "Ensure your final output does not mention your tool usage steps."
+                        "Please follow these steps in order when processing this transcript:\n\n"
+                        "STEP 1: Use the provided tools to access reference materials and memory categories.\n"
+                        "- List all available reference files and memory categories\n"
+                        "- Retrieve and review relevant references and memories to ensure accurate information\n\n"
+                        "STEP 2: Create a comprehensive summary of the session.\n"
+                        "- This summary should be detailed and complete\n"
+                        "- Include all significant events, character interactions, and plot developments\n"
+                        "- This summary will be your final output to the user\n\n"
+                        "STEP 3: AFTER completing your summary, update the memory categories with new information.\n"
+                        "- Use retrieve_memory_categories to first get the current content of each memory category\n"
+                        "- Then use update_memory_categories with two parameters: a list of category names and a list of updated contents\n"
+                        "- Update characters.md with new characters or character development\n"
+                        "- Update locations.md with new locations or location details\n"
+                        "- Update plot_elements.md with quest progress and story developments\n"
+                        "- Update player_decisions.md with significant choices and their consequences\n"
+                        "- Update world_state.md with changes to the political or environmental situation\n"
+                        "- Update items_resources.md with new items or resources acquired\n"
+                        "- Update knowledge_lore.md with new lore or discovered secrets\n\n"
+                        "IMPORTANT: Your final output must be ONLY the session summary. Do not include any tool usage steps, memory updates, or other process information in your final response."
                     )
                 
                 # Add previous summaries context if available

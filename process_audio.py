@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Transcribe audio files using the ElevenLabs Speech-to-Text API with speaker diarization.
 Outputs a nicely formatted markdown file with speaker turns.
