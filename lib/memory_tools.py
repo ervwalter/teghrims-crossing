@@ -113,8 +113,8 @@ def _init_db(conn: sqlite3.Connection) -> None:
             )
             article_id = conn.execute("SELECT id FROM article WHERE slug = ?", (slug,)).fetchone()[0]
             conn.execute(
-                "INSERT INTO article_revision(article_id, session_date, source, content_md) VALUES (?,?,?,?)",
-                (article_id, None, "HUMAN", meta["body"]),
+                "INSERT INTO article_revision(article_id, session_date, source, content_md, updated_at) VALUES (?,?,?,?,?)",
+                (article_id, None, "HUMAN", meta["body"], '1970-01-01T00:00:00'),
             )
         conn.commit()
 
@@ -163,9 +163,8 @@ def latest_revision_before(slug: str, cutoff: date) -> Optional[str]:
     FROM article_revision r
     JOIN article a ON a.id = r.article_id
     WHERE a.slug = ?
-      AND (r.session_date IS NULL OR r.session_date < ?)
-    ORDER BY (r.session_date IS NULL) ASC,
-             r.session_date DESC,
+      AND (COALESCE(r.session_date, DATE(r.updated_at)) < ?)
+    ORDER BY COALESCE(r.session_date, DATE(r.updated_at)) DESC,
              r.updated_at DESC
     LIMIT 1;
     """
@@ -285,7 +284,8 @@ if __name__ == "__main__":
     print(f"\n{'='*80}\nArticle Contents\n{'='*80}")
     for article in articles:
         slug = article['slug']
-        cutoff = date.today()
+        from datetime import timedelta
+        cutoff = date.today() + timedelta(days=1)
         content = latest_revision_before(slug, cutoff) or ""
         print(f"\n\n{'*'*80}\n{article['title']} ({slug})\n{'*'*80}")
         print(content[:500] + ("..." if len(content) > 500 else ""))
