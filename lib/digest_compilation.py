@@ -9,10 +9,11 @@ import re
 from typing import List, Dict, Optional
 from pathlib import Path
 import asyncio
+from datetime import date
 
 from agents import Agent, Runner
 from .reference_utils import get_player_roster, list_reference_files, retrieve_reference_files
-from .memory_tools import list_articles, get_articles, update_article
+from .memory_tools import list_articles, get_articles, update_article, list_articles_meta, latest_revision_for_date
 
 def get_slice_content(slice_path: str) -> str:
     """
@@ -345,3 +346,62 @@ def process_all_sessions_to_digests(openai_api_key: str) -> None:
         except Exception as e:
             print(f"Error processing session {session_date}: {str(e)}\n")
             continue
+    
+    # After processing all sessions, export the latest version of each article to markdown files
+    print("\nExporting the latest version of each article to markdown files...")
+    export_articles_to_markdown()
+
+
+
+
+
+def export_articles_to_markdown() -> None:
+    """
+    Export the latest version of each article to markdown files in the output/codex folder.
+    Sets file modification times to match the last update time of each article in the database.
+    """
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    output_dir = os.path.join(base_dir, "output", "codex")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Get current date for retrieving the latest versions
+    current_date = date.today()
+    
+    # Get all article metadata
+    articles = list_articles_meta()
+    
+    if not articles:
+        print("No articles found in the campaign memory database.")
+        return
+    
+    print(f"Found {len(articles)} articles to export.")
+    
+    for article in articles:
+        slug = article['slug']
+        title = article['title']
+        
+        # Get the latest content and timestamp of the article
+        content, last_modified = latest_revision_for_date(slug, current_date)
+        content = content or ""
+        
+        if not content:
+            print(f"Warning: No content found for article '{title}' ({slug})")
+            continue
+        
+        # Create the output file (use the slug for the filename)
+        output_file = os.path.join(output_dir, f"{slug}.md")
+        
+        try:
+            # Write the content to the file
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            
+            # Set the modification time of the file to match the article's last modification
+            if last_modified:
+                os.utime(output_file, (last_modified, last_modified))
+            
+            print(f"Exported '{title}' to {output_file} with timestamp from database")
+        except Exception as e:
+            print(f"Error exporting article '{title}': {str(e)}")
+    
+    print("Export of articles to markdown files completed with preserved timestamps.")

@@ -28,7 +28,7 @@ import sqlite3
 from pathlib import Path
 from datetime import date
 import logging
-from typing import List, Optional, Dict, TypedDict
+from typing import List, Optional, Dict, TypedDict, Tuple, Union
 
 # Set up absolute path to the memory directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -77,7 +77,7 @@ _INITIAL_ARTICLES: Dict[str, ArticleStub] = {
     "world-state": {
         "title": "World State",
         "description": "This entry tracks the current political, social, and environmental conditions of the campaign world. It includes information on ruling powers, ongoing conflicts, seasonal events, and other dynamic elements that change over time. This file helps maintain a consistent and evolving world that responds realistically to the passage of time and player actions. World state elements are organized by region and sphere of influence, with cross-references to related characters, factions, and plot elements.",
-        "body": """# World State\n\n## Political Landscape\n<!-- Format: Region - Ruling power - Current stability - Notable tensions -->\n\n## Active Conflicts\n<!-- Format: Conflict name - Involved parties - Current status - Areas affected -->\n\n## Seasonal & Time-Dependent Events\n<!-- Format: Event name - Timing - Significance - Affected regions -->\n\n## Economic Conditions\n<!-- Format: Region - Resource availability - Trade status - Price fluctuations -->\n\n## Magical Phenomena\n<!-- Format: Phenomenon - Location - Duration - Effects -->\n""",
+        "body": """# World State\n\n## Political Landscape\n<!-- Format: Region - Ruling power - Current stability - Notable tensions -->\n\n## Active Conflicts\n<!-- Format: Conflict name - Involved parties - Current status - Areas affected -->\n\n## Seasonal & Time-Dependent Events\n<!-- Format: Event name - Timing - Significance - Affected regions -->\n\n## Economic Conditions\n<!-- Format: Region - Resource availability - Trade status - Price fluctuations -->\n""",
     },
 }
 
@@ -157,10 +157,19 @@ def list_articles_meta() -> List[ArticleMeta]:
         return []
 
 
-def latest_revision_for_date(slug: str, cutoff: date) -> Optional[str]:
-    """Given a slug and cutoff date, return the most recent version as of that date (inclusive)."""
+def latest_revision_for_date(slug: str, cutoff: date) -> Tuple[Optional[str], Optional[float]]:
+    """Given a slug and cutoff date, return the most recent version and timestamp as of that date (inclusive).
+    
+    Args:
+        slug: The article slug
+        cutoff: The date to get the article as of (inclusive)
+        
+    Returns:
+        A tuple of (content, timestamp) where both can be None if not found
+    """
+    # Retrieve both content and timestamp information
     sql = """
-    SELECT r.content_md
+    SELECT r.content_md, COALESCE(r.session_date, DATE(r.updated_at)) as revision_date, r.updated_at
     FROM article_revision r
     JOIN article a ON a.id = r.article_id
     WHERE a.slug = ?
@@ -172,10 +181,32 @@ def latest_revision_for_date(slug: str, cutoff: date) -> Optional[str]:
     try:
         with _get_conn() as conn:
             row = conn.execute(sql, (slug, cutoff.isoformat())).fetchone()
-            return row[0] if row else None
+            
+            if not row:
+                return (None, None)
+                
+            content = row[0]
+            timestamp = None
+            
+            # Convert the updated_at timestamp
+            import time
+            from datetime import datetime
+            
+            # Always use the updated_at timestamp - it will always exist
+            try:
+                dt = datetime.fromisoformat(row[2].replace(' ', 'T'))
+                timestamp = dt.timestamp()
+            except (ValueError, TypeError):
+                # Fall back to current time if parsing fails
+                timestamp = time.time()
+                
+            return (content, timestamp)
     except sqlite3.Error as e:
         logging.error(f"Database error in latest_revision_for_date: {e}")
-        return None
+        return (None, None)
+
+
+
 
 
 def insert_revision(slug: str, content_md: str, *, session_date: Optional[date], source: str) -> None:
@@ -228,7 +259,7 @@ def get_articles(slugs: List[str], cutoff_date: str) -> Dict[str, str]:
     Dict[str, str]: Mapping of slug to markdown body as of cutoff_date (empty string if not found).
     """
     cutoff = _safe_date(cutoff_date)
-    return {slug: latest_revision_for_date(slug, cutoff) or "" for slug in slugs}
+    return {slug: latest_revision_for_date(slug, cutoff)[0] or "" for slug in slugs}
 
 
 
@@ -287,7 +318,7 @@ if __name__ == "__main__":
         slug = article['slug']
         from datetime import timedelta
         cutoff = date.today()
-        content = latest_revision_for_date(slug, cutoff) or ""
+        content = latest_revision_for_date(slug, cutoff)[0] or ""
         print(f"\n\n{'*'*80}\n{article['title']} ({slug})\n{'*'*80}")
         print(content[:500] + ("..." if len(content) > 500 else ""))
     
