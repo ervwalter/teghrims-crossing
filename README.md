@@ -13,11 +13,12 @@ This toolkit helps manage and transform recordings from tabletop RPG sessions (l
 
 ## Directory Structure
 
-- `/Audio`: Raw audio recordings of sessions (organized by date)
-- `/Transcripts`: Transcribed text from audio recordings
+- `/audio`: Raw audio recordings of sessions (organized by date)
+- `/transcripts`: Transcribed text from audio recordings
 - `/Summaries`: Generated summaries, narratives, and podcast scripts
 - `/Podcasts`: Generated podcast audio files
-- `/References`: Reference materials for the campaign
+- `/references`: Reference materials for the campaign
+- `/memory`: Campaign memory database and information
 - `/Prompts`: AI prompts for generating different types of content
 - `/Images`: Generated or stored images related to sessions
 
@@ -104,7 +105,7 @@ Usage:
 ## Workflow
 
 1. Record your tabletop RPG session
-2. Place audio files in the `/Audio` directory with naming format: `YYMMDD_####.mp3`
+2. Place audio files in the `/audio` directory with naming format: `YYMMDD_####.mp3`
 3. Run `process_audio.py` to transcribe audio to text
 4. Run `transcript_agent.py` to generate summaries and other content
 5. Run `create_podcasts.py` to generate podcast audio from scripts

@@ -24,11 +24,11 @@ def create_session_transcript(date: str, audio_files: List[str], api_key: str, t
         debug: Enable debug mode
     """
     # Ensure Raw Transcripts directory exists
-    raw_transcripts_dir = os.path.join(transcripts_dir, "Raw Transcripts")
+    raw_transcripts_dir = os.path.join(transcripts_dir, "raw-transcripts")
     os.makedirs(raw_transcripts_dir, exist_ok=True)
     
     # Create a segments directory for individual pieces
-    segments_dir = os.path.join(raw_transcripts_dir, "Segments", date)
+    segments_dir = os.path.join(raw_transcripts_dir, "segments", date)
     os.makedirs(segments_dir, exist_ok=True)
     
     # Prepare output file path
@@ -131,7 +131,7 @@ def create_session_transcript(date: str, audio_files: List[str], api_key: str, t
             print("To process slices, set the OPENAI_API_KEY environment variable.")
     else:
         print("\nTranscription incomplete. Some files failed to process.")
-        print("Individual successfully transcribed segments are saved in the Segments directory.")
+        print("Individual successfully transcribed segments are saved in the segments directory.")
         print("Run the script again to retry failed segments.")
         sys.exit(1)  # Exit with error code
 
@@ -148,8 +148,8 @@ def auto_process_sessions(api_key: str, debug: bool = False, timeout: int = 300,
     """
     # Set up paths
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    audio_dir = os.path.join(base_dir, "Audio")
-    transcripts_dir = os.path.join(base_dir, "Transcripts")
+    audio_dir = os.path.join(base_dir, "audio")
+    transcripts_dir = os.path.join(base_dir, "transcripts")
     
     print(f"Looking for unprocessed sessions in {audio_dir}...\n")
     

@@ -25,7 +25,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 BASE_DIR = SCRIPT_DIR # Assuming create_podcasts.py is in the root of the Sessions folder
 SUMMARIES_DIR = BASE_DIR / "Summaries"
 PODCASTS_DIR = BASE_DIR / "Podcasts"
-PROCESSED_AUDIO_DIR = BASE_DIR / "_ProcessedAudioSnippets" # Temporary storage for snippets
+PROCESSED_AUDIO_DIR = BASE_DIR / ".processed-audio-snippets" # Temporary storage for snippets
 
 HOST_VOICE_ID = "zGjIP4SZlMnY9m93k97r"  # Updated host voice
 GUEST_VOICE_ID = "hmMWXCj9K7N5mCPcRkfC"

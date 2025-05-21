@@ -1,7 +1,11 @@
 __pycache__
 .DS_Store
-Audio/
-Podcasts/
-Transcripts/
+# Ignore directories but keep .gitkeep files
+audio/
+output/
+transcripts/
+memory/
 *.docx
-Memory/campaign-memory.db
+
+# But always include .gitkeep files
+!**/.gitkeep

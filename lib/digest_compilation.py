@@ -43,7 +43,7 @@ def get_session_slices(session_date: str) -> List[Dict]:
         List of dictionaries containing slice info (path and slice number)
     """
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    slices_dir = os.path.join(base_dir, "Transcripts", "Slices", session_date)
+    slices_dir = os.path.join(base_dir, "transcripts", "slices", session_date)
     
     if not os.path.exists(slices_dir):
         print(f"No slices directory found for session {session_date}")
@@ -276,7 +276,7 @@ def combine_session_slices(session_date: str, openai_api_key: str) -> Optional[s
     
     # Set up output directory
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    output_dir = os.path.join(base_dir, "Transcripts", "Digests")
+    output_dir = os.path.join(base_dir, "transcripts", "digests")
     os.makedirs(output_dir, exist_ok=True)
     
     # Output file path
@@ -310,7 +310,7 @@ def process_all_sessions_to_digests(openai_api_key: str) -> None:
         openai_api_key: OpenAI API key
     """
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    slices_dir = os.path.join(base_dir, "Transcripts", "Slices")
+    slices_dir = os.path.join(base_dir, "transcripts", "slices")
     
     if not os.path.exists(slices_dir):
         print(f"No slices directory found at {slices_dir}")
@@ -329,7 +329,7 @@ def process_all_sessions_to_digests(openai_api_key: str) -> None:
     for session_date in session_dates:
         # Check if digest already exists
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        output_dir = os.path.join(base_dir, "Transcripts", "Digests")
+        output_dir = os.path.join(base_dir, "transcripts", "digests")
         
         # Check if this session already has a digest
         if os.path.exists(output_dir):

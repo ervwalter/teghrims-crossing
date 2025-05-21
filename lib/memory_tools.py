@@ -30,9 +30,9 @@ from datetime import date
 import logging
 from typing import List, Optional, Dict, TypedDict
 
-# Set up absolute path to the Memory directory
+# Set up absolute path to the memory directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MEMORY_DIR = os.path.join(BASE_DIR, "Memory")
+MEMORY_DIR = os.path.join(BASE_DIR, "memory")
 os.makedirs(MEMORY_DIR, exist_ok=True)
 DB_PATH = Path(os.path.join(MEMORY_DIR, "campaign-memory.db"))
 
