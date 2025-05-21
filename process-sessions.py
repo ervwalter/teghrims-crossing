@@ -18,6 +18,7 @@ from lib.audio_transcription import transcribe_audio
 from lib.transcript_compilation import auto_process_sessions
 from lib.slice_summarization import process_all_transcripts_to_slices
 from lib.digest_compilation import process_all_sessions_to_digests
+from lib.digest_processing import process_all_digests
 
 
 def main():
@@ -58,6 +59,11 @@ def main():
         print("Step 3: Creating session digests from slices...")
         process_all_sessions_to_digests(openai_api_key)
         print("\nSession digest creation complete!\n")
+        
+        # Step 4: Process session digests with agent prompts
+        print("Step 4: Processing session digests with agent prompts...")
+        process_all_digests(openai_api_key)
+        print("\nSession digest processing complete!\n")
         
         print("All processing complete!")
         

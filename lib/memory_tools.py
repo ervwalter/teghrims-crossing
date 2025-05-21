@@ -157,13 +157,14 @@ def list_articles_meta() -> List[ArticleMeta]:
         return []
 
 
-def latest_revision_before(slug: str, cutoff: date) -> Optional[str]:
+def latest_revision_for_date(slug: str, cutoff: date) -> Optional[str]:
+    """Given a slug and cutoff date, return the most recent version as of that date (inclusive)."""
     sql = """
     SELECT r.content_md
     FROM article_revision r
     JOIN article a ON a.id = r.article_id
     WHERE a.slug = ?
-      AND (COALESCE(r.session_date, DATE(r.updated_at)) < ?)
+      AND (COALESCE(r.session_date, DATE(r.updated_at)) <= ?)
     ORDER BY COALESCE(r.session_date, DATE(r.updated_at)) DESC,
              r.updated_at DESC
     LIMIT 1;
@@ -171,9 +172,9 @@ def latest_revision_before(slug: str, cutoff: date) -> Optional[str]:
     try:
         with _get_conn() as conn:
             row = conn.execute(sql, (slug, cutoff.isoformat())).fetchone()
-        return row[0] if row else None
+            return row[0] if row else None
     except sqlite3.Error as e:
-        logging.error(f"Error retrieving revision for {slug}: {e}")
+        logging.error(f"Database error in latest_revision_for_date: {e}")
         return None
 
 
@@ -213,7 +214,7 @@ def list_articles() -> List[ArticleMeta]:
 @function_tool
 def get_articles(slugs: List[str], cutoff_date: str) -> Dict[str, str]:
     """
-    Fetch the full markdown *body* of each article in `slugs` **as it existed before** `cutoff_date`.
+    Fetch the full markdown *body* of each article in `slugs` **as it existed on or before** `cutoff_date`.
 
     Parameters
     ----------
@@ -221,13 +222,13 @@ def get_articles(slugs: List[str], cutoff_date: str) -> Dict[str, str]:
         List of slugs from `list_articles`.
     cutoff_date : str
         ISO‐8601 date `YYYY‑MM‑DD` in format 'YYYY-MM-DD' (e.g. '2025-05-20').
-        Specifies the point in time to retrieve each article as it existed before this date.
+        Specifies the point in time to retrieve each article as it existed on or before this date.
     Returns
     -------
     Dict[str, str]: Mapping of slug to markdown body as of cutoff_date (empty string if not found).
     """
     cutoff = _safe_date(cutoff_date)
-    return {slug: latest_revision_before(slug, cutoff) or "" for slug in slugs}
+    return {slug: latest_revision_for_date(slug, cutoff) or "" for slug in slugs}
 
 
 
@@ -285,8 +286,8 @@ if __name__ == "__main__":
     for article in articles:
         slug = article['slug']
         from datetime import timedelta
-        cutoff = date.today() + timedelta(days=1)
-        content = latest_revision_before(slug, cutoff) or ""
+        cutoff = date.today()
+        content = latest_revision_for_date(slug, cutoff) or ""
         print(f"\n\n{'*'*80}\n{article['title']} ({slug})\n{'*'*80}")
         print(content[:500] + ("..." if len(content) > 500 else ""))
     
