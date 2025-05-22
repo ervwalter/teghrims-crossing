@@ -50,9 +50,9 @@ Note that the session digest has already excluded:
 - Session scheduling discussions
 - Food/break-related conversation
 
-Format the summary using the following markdown structure:
+Format the summary using the following markdown structure (pick a descriptive title of no more than 6-7 words for the initial heading in the output):
 
-# Session Summary [Date]
+# [Descriptive Session Title - no more than 6-7 words]
 
 ## Session Overview
 A brief (2-3 sentence) overview of the session's main events and accomplishments.

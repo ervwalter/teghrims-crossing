@@ -1,9 +1,18 @@
 elevenlabs>=1.5.0
 google-auth>=2.0.0
 google-api-python-client>=2.0.0
-markdown>=3.8
+
+# Markdown parsing and processing
+mistletoe>=0.7.2  # Pure Python Markdown parser with AST
+
+# The official Notion API client
+notion-client>=0.1.0
+
+# OpenAI integration
 openai>=1.79.0
 openai-agents==0.0.15
+
+# Other utilities
 pydrive2>=1.15.0
 pydub>=0.25.1
 PyYAML>=6.0

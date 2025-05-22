@@ -9,6 +9,7 @@ Usage:
 Environment Variables:
     ELEVEN_API_KEY: Your ElevenLabs API key
     OPENAI_API_KEY: Your OpenAI API key (required for slice processing and combining)
+    NOTION_API_KEY: Your Notion API key (required for publishing to Notion)
 """
 
 import os
@@ -19,6 +20,7 @@ from lib.transcript_compilation import auto_process_sessions
 from lib.slice_summarization import process_all_transcripts_to_slices
 from lib.digest_compilation import process_all_sessions_to_digests
 from lib.digest_processing import process_all_digests
+from lib.notion_publish import publish_session_outputs
 
 
 def main():
@@ -31,6 +33,11 @@ def main():
     openai_api_key = os.environ.get("OPENAI_API_KEY")
     if not openai_api_key:
         print("Error: OPENAI_API_KEY environment variable not set")
+        sys.exit(1)
+        
+    notion_api_key = os.environ.get("NOTION_API_KEY")
+    if not notion_api_key:
+        print("Error: NOTION_API_KEY environment variable not set")
         sys.exit(1)
     
     # Parse command line arguments
@@ -64,6 +71,11 @@ def main():
         print("Step 4: Processing session digests with agent prompts...")
         process_all_digests(openai_api_key)
         print("\nSession digest processing complete!\n")
+        
+        # Step 5: Publish session outputs to Notion
+        print("Step 5: Publishing session outputs to Notion...")
+        publish_session_outputs(base_dir)
+        print("\nNotion publishing complete!\n")
         
         print("All processing complete!")
         
