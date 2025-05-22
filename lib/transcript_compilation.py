@@ -141,7 +141,7 @@ def auto_process_sessions(api_key: str, debug: bool = False, timeout: int = 300,
     Automatically process all unprocessed sessions.
     
     Args:
-        api_key: ElevenLabs API key
+        api_key: ElevenLabs API key (can be None to skip audio processing)
         debug: Enable debug mode (kept for compatibility, but not used)
         timeout: Timeout in seconds for API calls
         retries: Maximum number of retry attempts for API calls
@@ -153,6 +153,11 @@ def auto_process_sessions(api_key: str, debug: bool = False, timeout: int = 300,
     
     print(f"Looking for unprocessed sessions in {audio_dir}...\n")
     
+    # Check if API key is provided
+    if api_key is None:
+        print("ElevenLabs API key not provided. Skipping audio transcription.")
+        return
+        
     # Find unprocessed sessions
     unprocessed_sessions = find_unprocessed_sessions(audio_dir, transcripts_dir)
     

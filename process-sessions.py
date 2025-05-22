@@ -21,15 +21,12 @@ from lib.slice_summarization import process_all_transcripts_to_slices
 from lib.digest_compilation import process_all_sessions_to_digests
 from lib.digest_processing import process_all_digests
 from lib.notion_publish import publish_session_outputs
+from lib.notion_cache import initialize_cache, sync_to_notion
 
 
 def main():
+    """Main entry point."""
     # Get API keys from environment variables
-    eleven_api_key = os.environ.get("ELEVEN_API_KEY")
-    if not eleven_api_key:
-        print("Error: ELEVEN_API_KEY environment variable not set")
-        sys.exit(1)
-    
     openai_api_key = os.environ.get("OPENAI_API_KEY")
     if not openai_api_key:
         print("Error: OPENAI_API_KEY environment variable not set")
@@ -38,6 +35,19 @@ def main():
     notion_api_key = os.environ.get("NOTION_API_KEY")
     if not notion_api_key:
         print("Error: NOTION_API_KEY environment variable not set")
+        sys.exit(1)
+        
+    eleven_api_key = os.environ.get("ELEVEN_API_KEY")
+    if not eleven_api_key:
+        print("Warning: ELEVEN_API_KEY environment variable not set. Audio transcription will be skipped.")
+        eleven_api_key = None
+        
+    try:
+        # Initialize notion cache
+        print("\nInitializing Notion cache...")
+        initialize_cache()
+    except Exception as e:
+        print(f"Error initializing Notion cache: {e}")
         sys.exit(1)
     
     # Parse command line arguments
@@ -76,6 +86,9 @@ def main():
         print("Step 5: Publishing session outputs to Notion...")
         publish_session_outputs(base_dir)
         print("\nNotion publishing complete!\n")
+        
+        # Notion cache is now synced immediately after digest creation
+        # to ensure entity updates are persisted even if later steps are interrupted
         
         print("All processing complete!")
         

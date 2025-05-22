@@ -702,6 +702,37 @@ def update_reference_entry(
 
 # -------------------- Query Functions --------------------
 
+def get_database_entries(database_id: str) -> List[Dict]:
+    """
+    Get all entries from a Notion database, handling pagination.
+    
+    Args:
+        database_id: ID of the database to query
+    
+    Returns:
+        List[Dict]: List of all database entries
+    """
+    notion = get_notion_client()
+    entries = []
+    has_more = True
+    next_cursor = None
+    
+    try:
+        while has_more:
+            response = notion.databases.query(
+                database_id=database_id,
+                start_cursor=next_cursor
+            )
+            entries.extend(response["results"])
+            has_more = response["has_more"]
+            next_cursor = response["next_cursor"] if has_more else None
+        
+        return entries
+    except Exception as e:
+        print(f"❌ Error getting database entries: {str(e)}")
+        return []
+
+
 def query_database(database_id: str, filter_obj: Optional[Dict] = None, sorts: Optional[List] = None) -> Dict:
     """
     Query entries from a Notion database with optional filtering and sorting.

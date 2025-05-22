@@ -13,6 +13,8 @@ import asyncio
 from agents import Agent, Runner
 from .reference_utils import list_reference_files, retrieve_reference_files
 from .memory_tools import list_articles, get_articles
+from .notion_tools import get_all_entities
+from .context import SessionContext
 
 
 def get_session_digests() -> List[Dict]:
@@ -220,13 +222,17 @@ async def process_digest_with_prompt(digest_content: str, session_date: str, pro
         list_reference_files,
         retrieve_reference_files,
         list_articles,
-        get_articles
+        get_articles,
+        get_all_entities
     ]
     
+    # Create session context
+    session_context = SessionContext(session_date=session_date)
+    
     # Create the agent
-    agent = Agent(
+    agent = Agent[SessionContext](
         name=f"{prompt_name.capitalize()}Agent",
-        instructions=f"You are a skilled tabletop RPG content creator processing a session from {session_date}. You have tools to access campaign reference materials and memory articles. Use them wisely to ensure continuity and accuracy.",
+        instructions="You are a skilled tabletop RPG content creator. You have tools to access campaign reference materials and memory articles. You can also use get_all_entities to see all known entities in the campaign world, which will help you normalize entity names. Use these tools wisely to ensure continuity and accuracy.",
         model="gpt-4.1",
         tools=tools
     )
@@ -236,12 +242,12 @@ async def process_digest_with_prompt(digest_content: str, session_date: str, pro
 
 BEGIN BY:
 1. Using list_articles to see all available campaign-memory articles
-2. Using get_articles with a list of slugs and the cutoff_date="{session_date}" to read the current state of multiple articles at once
+2. Using get_articles with a list of slugs to read the current state of multiple articles at once
 3. Using list_reference_files to see all available reference documents
 4. Using retrieve_reference_files tool to read the player-roster.md and any other relevant references
-5. Studying these references carefully to understand character names, locations, and important entities
+5. Using get_all_entities to see all known entities in the campaign world to help normalize entity names
 
-The content below is a digest of a roleplaying game session. Process it according to the following instructions:
+After gathering this information, FOLLOW THESE SPECIFIC INSTRUCTIONS EXACTLY:
 
 {prompt_content}
 
@@ -256,8 +262,8 @@ The content below is a digest of a roleplaying game session. Process it accordin
     user_prompt += f"\n\nHere's the session digest to process:\n\n{digest_content}"
     
     try:
-        # Run the agent
-        result = await Runner.run(agent, user_prompt)
+        # Run the agent with session context
+        result = await Runner.run(agent, user_prompt, context=session_context)
         return result.final_output
     except Exception as e:
         print(f"Error running agent for {prompt_name} on session {session_date}: {str(e)}")

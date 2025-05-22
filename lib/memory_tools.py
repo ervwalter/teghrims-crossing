@@ -30,6 +30,9 @@ from datetime import date
 import logging
 from typing import List, Optional, Dict, TypedDict, Tuple, Union
 
+from agents import RunContextWrapper, function_tool
+from .context import SessionContext
+
 # Set up absolute path to the memory directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEMORY_DIR = os.path.join(BASE_DIR, "memory")
@@ -228,7 +231,6 @@ def insert_revision(slug: str, content_md: str, *, session_date: Optional[date],
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 # AGENT SDK TOOLS -------------------------------------------------------------
-from agents import function_tool
 
 @function_tool
 def list_articles() -> List[ArticleMeta]:
@@ -243,56 +245,65 @@ def list_articles() -> List[ArticleMeta]:
 
 
 @function_tool
-def get_articles(slugs: List[str], cutoff_date: str) -> Dict[str, str]:
+def get_articles(wrapper: RunContextWrapper[SessionContext], slugs: List[str]) -> Dict[str, str]:
     """
-    Fetch the full markdown *body* of each article in `slugs` **as it existed on or before** `cutoff_date`.
+    Fetch the full markdown *body* of each article in `slugs` **as it existed on or before** the session date in context.
 
     Parameters
     ----------
+    wrapper : RunContextWrapper[SessionContext]
+        The context wrapper containing session information.
     slugs : List[str]
         List of slugs from `list_articles`.
-    cutoff_date : str
-        ISO‐8601 date `YYYY‑MM‑DD` in format 'YYYY-MM-DD' (e.g. '2025-05-20').
-        Specifies the point in time to retrieve each article as it existed on or before this date.
     Returns
     -------
-    Dict[str, str]: Mapping of slug to markdown body as of cutoff_date (empty string if not found).
+    Dict[str, str]: Mapping of slug to markdown body as of the session date (empty string if not found).
     """
-    cutoff = _safe_date(cutoff_date)
-    return {slug: latest_revision_for_date(slug, cutoff)[0] or "" for slug in slugs}
-
+    # Convert session_date string to date object (required by latest_revision_for_date)
+    cutoff = wrapper.context.get_date_object()
+        
+    result = {}
+    
+    for slug in slugs:
+        content, _ = latest_revision_for_date(slug, cutoff)
+        result[slug] = content or ""
+    
+    return result
 
 
 @function_tool
-def update_article(slug: str, content_md: str, session_date: str, source: str = "LLM") -> str:
-    """Append a new revision (no overwrite) to `slug`.
+def update_article(wrapper: RunContextWrapper[SessionContext], slug: str, content_md: str, source: str = "LLM") -> str:
+    """
+    Append a new revision (no overwrite) to `slug`.
 
     Parameters
     ----------
+    wrapper : RunContextWrapper[SessionContext]
+        The context wrapper containing session information.
     slug : str
         Target article slug.
     content_md : str
         **Entire replacement** markdown body for the article.
-    session_date : str
-        ISO‐8601 date `YYYY‑MM‑DD` in format 'YYYY-MM-DD' (e.g. '2025-05-20').
-        This should be the date of the play session being processed.
-        Pass an empty string "" to mark as a human edit (no session date).
     source : str
         Source of the update. Defaults to "LLM". Can be "HUMAN" or other identifiers.
     Returns
     -------
     "ok" on success.
     """
-    sd = _safe_date(session_date)
-    # Fix potential AttributeError with proper null check
-    is_empty_session_date = session_date is not None and session_date.strip() == ""
+    # Convert session_date string to date object (required by insert_revision)
+    session_date_obj = wrapper.context.get_date_object()
     
     try:
-        insert_revision(slug, content_md, session_date=None if is_empty_session_date else sd, source=source)
+        insert_revision(
+            slug=slug,
+            content_md=content_md,
+            session_date=session_date_obj,
+            source=source
+        )
         return "ok"
     except Exception as e:
         logging.error(f"Error updating article {slug}: {e}")
-        return f"error: {str(e)}"
+        return f"Error: {str(e)}"
 
 
 # ---------------------------------------------------------------------------

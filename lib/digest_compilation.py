@@ -14,6 +14,8 @@ from datetime import date
 from agents import Agent, Runner
 from .reference_utils import get_player_roster, list_reference_files, retrieve_reference_files
 from .memory_tools import list_articles, get_articles, update_article, list_articles_meta, latest_revision_for_date
+from .notion_tools import get_all_entities, add_new_entities, update_existing_entities
+from .context import SessionContext
 
 def get_slice_content(slice_path: str) -> str:
     """
@@ -107,23 +109,25 @@ async def process_combined_slices(combined_slices: str, openai_api_key: str, ses
         list_reference_files,
         retrieve_reference_files,
         list_articles,
-        get_articles
+        get_articles,
+        get_all_entities
     ]
     
-    agent = Agent(
+    # Create session context
+    session_context = SessionContext(session_date=session_date)
+    
+    agent = Agent[SessionContext](
         name="SessionDigestAgent",
-        instructions=f"You are THE EDITOR, an expert continuity wrangler for tabletop RPG session transcripts. IMPORTANT: You are processing a session from {session_date}. Always begin by using list_reference_files to see what reference documents are available, and use retrieve_reference_files to access the player-roster.md and any other relevant references. These references are critical for correctly identifying and normalizing character names and other entities. Use list_articles and get_article to read the campaign memory as it existed before this session.",
+        instructions="You are THE EDITOR, an expert continuity wrangler for tabletop RPG session transcripts. Always begin by using list_reference_files to see what reference documents are available, and use retrieve_reference_files to access the player-roster.md and any other relevant references. These references are critical for correctly identifying and normalizing character names and other entities. Use list_articles and get_articles to read the campaign memory. You can also use get_all_entities to see all known entities in the campaign world, which will help you normalize entity names in the transcript.",
         model="gpt-4.1",
         tools=tools
     )
     
-    prompt = f"""You are **THE EDITOR**, an expert continuity wrangler for a D&D campaign called "Teghrim's Crossing".
-
-IMPORTANT: You are processing a session from {session_date}.
+    prompt = """You are **THE EDITOR**, an expert continuity wrangler for a D&D campaign called "Teghrim's Crossing".
 
 BEGIN BY:
 1. Using list_articles to see all available campaign-memory articles
-2. Using get_articles with a list of slugs and the cutoff_date="{session_date}" to read the current state of multiple articles at once
+2. Using get_articles with a list of slugs to read the current state of multiple articles at once (the session date is automatically used from context)
 3. Using list_reference_files to see all available reference documents
 4. Using retrieve_reference_files tool to read the player-roster.md and any other relevant references
 5. Studying these references carefully to understand character names, locations, and important entities
@@ -163,9 +167,10 @@ Create one **Session Digest** that:
 - Append unresolved or unclear items to **Ambiguities & Uncertainties**.  
 - **IMPORTANT: Before beginning:**
   1. Use list_articles to see all available campaign memory articles
-  2. Use get_articles to retrieve relevant articles with cutoff_date="{session_date}"
+  2. Use get_articles to retrieve relevant articles (the session date is automatically used from context)
   3. Use list_reference_files to see what reference documents are available
   4. Use retrieve_reference_files to access player-roster.md and other files containing information from the GM about the campaign world
+  5. Use get_all_entities to see all known entities in the campaign world to help normalize entity names
 - **You MUST use these tools to normalize entity names and ensure consistency with existing campaign information.**
 
 ---
@@ -195,43 +200,70 @@ Create one **Session Digest** that:
     # Combine prompt with slices
     user_input = prompt + "\n\n" + combined_slices
     
-    # Run the agent
-    result = await Runner.run(agent, user_input)
+    # Run the agent with session context
+    result = await Runner.run(agent, user_input, context=session_context)
     
     return result.final_output
 
 
 
-def update_articles_from_digest(session_date: str, openai_api_key: str, digest_content: str) -> None:
+def update_campaign_knowledge(session_date: str, openai_api_key: str, digest_content: str) -> None:
     """
-    Use an agent to process the session digest and update campaign memory articles accordingly.
+    Use an agent to process the session digest and update campaign knowledge (articles and entities) accordingly.
     Args:
         session_date: The date of the session in YYYY-MM-DD format
         openai_api_key: OpenAI API key
-        digest_path: Path to the session digest file
+        digest_content: Content of the session digest
     """
     import asyncio
     from agents import Agent, Runner
 
 
-    # Tools for updating articles
-    tools = [list_articles, get_articles, update_article, list_reference_files, retrieve_reference_files]
+    # Tools for updating articles and entities
+    tools = [
+        list_articles, 
+        get_articles, 
+        update_article, 
+        list_reference_files, 
+        retrieve_reference_files,
+        get_all_entities,
+        add_new_entities,
+        update_existing_entities
+    ]
 
-    agent = Agent(
-        name="ArticleUpdaterAgent",
+    # Create session context
+    session_context = SessionContext(session_date=session_date)
+
+    agent = Agent[SessionContext](
+        name="CampaignKnowledgeUpdaterAgent",
         instructions=(
-            f"You are the CAMPAIGN MEMORY UPDATER. Your job is to read the session digest for a given session "
-            f"and update the campaign memory articles to reflect any new or changed information.\n"
-            f"Rules:\n"
-            f"- Use list_articles and get_articles to review the current state of the memory.\n"
-            f"- Use update_article to add new information or revise details as needed.\n"
-            f"- Be careful not to overwrite important existing information.\n"
-            f"- Reference the digest and existing memory to ensure continuity and accuracy.\n"
-            f"- Only update articles if there is clear, new, or corrected information from the digest.\n"
-            f"- Do NOT remove or overwrite important information that is not contradicted by the digest.\n"
-            f"- If uncertain, make your best effort to update the article using reasonable inference from the digest and prior memory.\n"
-            f"- Document all changes in the article body, maintaining good formatting.\n"
-            f"- You may use list_reference_files and retrieve_reference_files to access reference documents provided by the GM. These may help you understand the general campaign world and ensure your updates are accurate and consistent.\n"
+            "You are the CAMPAIGN KNOWLEDGE UPDATER. Your job is to read the session digest "
+            "and update both campaign memory articles and entity database to reflect new or changed information.\n\n"
+            "PART 1: UPDATING CAMPAIGN MEMORY ARTICLES\n"
+            "Rules:\n"
+            "- Use list_articles and get_articles to review the current state of the memory.\n"
+            "- Use update_article to add new information or revise details as needed.\n"
+            "- Be careful not to overwrite important existing information.\n"
+            "- Reference the digest and existing memory to ensure continuity and accuracy.\n"
+            "- Only update articles if there is clear, new, or corrected information from the digest.\n"
+            "- Do NOT remove or overwrite important information that is not contradicted by the digest.\n"
+            "- If uncertain, make your best effort to update the article using reasonable inference from the digest and prior memory.\n"
+            "- Document all changes in the article body, maintaining good formatting.\n\n"
+            "PART 2: UPDATING ENTITY DATABASE\n"
+            "Rules:\n"
+            "- Use get_all_entities to review the current entities in the database.\n"
+            "- PRIMARILY FOCUS ON PROPER NAMES OR UNCOMMON NAMES, even when they aren't proper (e.g., fictional monster names like 'Squig').\n"
+            "- SKIP adding entities for mundane things where the spelling is so common there is no risk of misspelling (e.g., 'sword', 'horse', 'gold').\n"
+            "- For new entities mentioned in the digest (NPCs, locations, items, etc.) that don't exist in the database, use add_new_entities.\n"
+            "- For existing entities that have new information (aliases, descriptions, etc.), use update_existing_entities.\n"
+            "- Pay special attention to the 'Entities' section of the digest which lists NPCs, locations, and items.\n"
+            "- For new entities, set appropriate entity types (PC, NPC, Location, Organization, Diety, Creature, Object, Concept).\n"
+            "- Include aliases and common misspellings when available to help with future name resolution.\n"
+            "- Write concise but informative descriptions based on what's known from the digest.\n\n"
+            "GENERAL GUIDANCE:\n"
+            "- You may use list_reference_files and retrieve_reference_files to access reference documents provided by the GM.\n"
+            "- These may help you understand the general campaign world and ensure your updates are accurate and consistent.\n"
+            "- Always prioritize consistency with existing information unless new information clearly contradicts it.\n"
         ),
         model="gpt-4.1",
         tools=tools
@@ -241,13 +273,13 @@ def update_articles_from_digest(session_date: str, openai_api_key: str, digest_c
         """
         Please retrieve and update every campaign memory article based on the session digest below.
         \n---\n
-        SESSION DIGEST for {session_date}:\n\n"""
+        SESSION DIGEST:\n\n"""
         f"""{digest_content}"""
     )
 
     async def run_update():
-        result = await Runner.run(agent, prompt)
-        print("Article update agent output:\n", result.final_output)
+        result = await Runner.run(agent, prompt, context=session_context)
+        print("Campaign knowledge update agent output:\n", result.final_output)
 
     asyncio.run(run_update())
 
@@ -294,7 +326,7 @@ def combine_session_slices(session_date: str, openai_api_key: str) -> Optional[s
         
         print(f"Session digest created successfully: {output_file}")
         # After digest creation, update articles based on the digest
-        update_articles_from_digest(session_date, openai_api_key, session_digest)
+        update_campaign_knowledge(session_date, openai_api_key, session_digest)
         return output_file
 
     
@@ -347,61 +379,14 @@ def process_all_sessions_to_digests(openai_api_key: str) -> None:
             print(f"Error processing session {session_date}: {str(e)}\n")
             continue
     
-    # After processing all sessions, export the latest version of each article to markdown files
-    print("\nExporting the latest version of each article to markdown files...")
-    export_articles_to_markdown()
+    # Articles are now exported to Notion directly
+    # No need to export to markdown files anymore
+    
+    # Sync Notion cache to ensure all entity updates are persisted
+    print("\nSyncing Notion cache...")
+    from .notion_cache import sync_to_notion
+    sync_to_notion()
+    print("Notion sync complete!\n")
 
 
 
-
-
-def export_articles_to_markdown() -> None:
-    """
-    Export the latest version of each article to markdown files in the output/codex folder.
-    Sets file modification times to match the last update time of each article in the database.
-    """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    output_dir = os.path.join(base_dir, "output", "codex")
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Get current date for retrieving the latest versions
-    current_date = date.today()
-    
-    # Get all article metadata
-    articles = list_articles_meta()
-    
-    if not articles:
-        print("No articles found in the campaign memory database.")
-        return
-    
-    print(f"Found {len(articles)} articles to export.")
-    
-    for article in articles:
-        slug = article['slug']
-        title = article['title']
-        
-        # Get the latest content and timestamp of the article
-        content, last_modified = latest_revision_for_date(slug, current_date)
-        content = content or ""
-        
-        if not content:
-            print(f"Warning: No content found for article '{title}' ({slug})")
-            continue
-        
-        # Create the output file (use the slug for the filename)
-        output_file = os.path.join(output_dir, f"{slug}.md")
-        
-        try:
-            # Write the content to the file
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write(content)
-            
-            # Set the modification time of the file to match the article's last modification
-            if last_modified:
-                os.utime(output_file, (last_modified, last_modified))
-            
-            print(f"Exported '{title}' to {output_file} with timestamp from database")
-        except Exception as e:
-            print(f"Error exporting article '{title}': {str(e)}")
-    
-    print("Export of articles to markdown files completed with preserved timestamps.")
