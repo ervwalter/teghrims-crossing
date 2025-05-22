@@ -3,7 +3,7 @@ __pycache__
 # Ignore directories but keep .gitkeep files
 audio/
 # output/
-transcripts/
+transcripts/raw-transcripts/
 memory/
 *.docx
 

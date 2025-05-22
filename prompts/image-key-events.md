@@ -39,17 +39,22 @@ Always use the tools to look up reference details about the campaign, characters
 
 - Provide exactly three distinct image generation prompts.
 - Each prompt should be a concise paragraph, typically 2-4 sentences long.
+- Pick an evocative image title for each prompt and include it before the prompt.
 - Clearly number each prompt (1, 2, 3).
 - Separate each prompt with a clear delimiter ("---") for easy processing.
 - Do not include any preamble or explanation before the first prompt, or any summary after the last prompt. Only output the prompts themselves.
 - If a specific characters are present in a scene, it is critical that you include their gender, race, and appearance in parens (based on reference files) so that they are included correctly.
 
-## Example Structure (for guidance, not a rigid template):
-
-1.  **Prompt 1:** [Description of scene, characters, action, mood, lighting, style. e.g., "Epic fantasy art, a lone warrior with a glowing sword stands defiantly before a colossal, shadowy beast in a crumbling, ancient ruin. Cinematic lighting, dramatic shadows, high detail. Focus on the scale difference and the hero's bravery."]
----
-2.  **Prompt 2:** [Different scene or moment. e.g., "A mystical forest clearing at twilight, where three robed figures perform a ritual around a shimmering portal. Ethereal light emanates from the portal, casting long, eerie shadows. Art style: painterly, atmospheric, detailed foliage."]
----
-3.  **Prompt 3:** [Another distinct moment. e.g., "Close-up portrait of a grizzled dwarven blacksmith, face illuminated by the orange glow of a forge, meticulously examining a complex, rune-etched axe. Sparks fly. Intense concentration, detailed textures on metal and beard. Style: realistic fantasy."]
-
 Remember: The goal is to provide varied and inspiring prompts that an image generation AI can use to create artwork reflecting the most compelling aspects of the RPG session.
+
+## Example Structure:
+
+Title: [Vivid title for the image]
+Prompt: [Description of scene, characters, action, mood, lighting, style. e.g., "Epic fantasy art, a lone warrior with a glowing sword stands defiantly before a colossal, shadowy beast in a crumbling, ancient ruin. Cinematic lighting, dramatic shadows, high detail. Focus on the scale difference and the hero's bravery."]
+---
+Title: [Vivid title for the image]
+Prompt: [Different scene or moment. e.g., "A mystical forest clearing at twilight, where three robed figures perform a ritual around a shimmering portal. Ethereal light emanates from the portal, casting long, eerie shadows. Art style: painterly, atmospheric, detailed foliage."]
+---
+Title: [Vivid title for the image]
+Prompt: [Another distinct moment. e.g., "Close-up portrait of a grizzled dwarven blacksmith, face illuminated by the orange glow of a forge, meticulously examining a complex, rune-etched axe. Sparks fly. Intense concentration, detailed textures on metal and beard. Style: realistic fantasy."]
+

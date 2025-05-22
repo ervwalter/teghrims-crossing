@@ -5,7 +5,7 @@ keeping them in sync with local markdown files.
 """
 import os
 import glob
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 import re
 from typing import Dict, Optional
 
@@ -94,7 +94,7 @@ def publish_session_summaries(base_dir: str) -> None:
             summary_data = parse_session_summary(file_path)
             
             # Get file's modification time
-            local_modified_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+            local_modified_time = datetime.fromtimestamp(os.path.getmtime(file_path)).replace(tzinfo=timezone.utc)
             
             # Create properties for Notion entry
             properties = {
@@ -207,7 +207,7 @@ def publish_articles() -> None:
             properties=properties,
             content=content,
             unique_property=("Slug", article['slug'], "rich_text"),
-            local_modified_time=datetime.fromtimestamp(timestamp)
+            local_modified_time=datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.utc)
         )
         
         if result:
@@ -281,7 +281,7 @@ def publish_session_narratives(base_dir: str) -> None:
             narrative_data = parse_session_narrative(file_path)
             
             # Get file's modification time
-            local_modified_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+            local_modified_time = datetime.fromtimestamp(os.path.getmtime(file_path)).replace(tzinfo=timezone.utc)
             
             # Create properties for Notion entry
             properties = {
