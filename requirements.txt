@@ -10,7 +10,7 @@ notion-client>=0.1.0
 
 # OpenAI integration
 openai>=1.79.0
-openai-agents==0.0.15
+openai-agents==0.0.16
 
 # Other utilities
 pydrive2>=1.15.0
