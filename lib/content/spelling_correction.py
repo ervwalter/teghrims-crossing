@@ -51,8 +51,14 @@ async def correct_spelling_with_entities(content: str, entities_context: str, ma
             "- Focus ONLY on proper names, character names, location names, organization names, etc.\n"
             "- If you're unsure whether something is an entity name, leave it unchanged\n"
             "- Preserve all formatting, punctuation, and structure exactly\n\n"
-            "Your goal is to make entity names consistent with the official database while "
-            "leaving everything else completely untouched."
+            "PARTIAL NAME HANDLING:\n"
+            "- If text uses just a first name (e.g. 'Gandalf') and the database has the full name "
+            "(e.g. 'Gandalf the Grey'), DO NOT replace it with the full name\n"
+            "- Only fix actual misspellings (e.g. 'Gandalph' → 'Gandalf')\n"
+            "- If text uses a short version of a place name (e.g. 'Waterdeep') and the database "
+            "has a longer version (e.g. 'City of Waterdeep'), leave the short version\n"
+            "- Partial names are acceptable as long as they're spelled correctly\n\n"
+            "Your goal is to fix misspellings while preserving the author's choice of name length/style."
         ),
         model="gpt-4.1-mini",
         tools=tools
@@ -60,13 +66,19 @@ async def correct_spelling_with_entities(content: str, entities_context: str, ma
     
     prompt = f"""Please correct any misspelled entity names in the following content using the official entity database.
 
-IMPORTANT: Only fix entity name spellings. Do NOT change anything else about the content - no rewriting, no improvements, no style changes.
+IMPORTANT: 
+- Only fix entity name SPELLINGS - do NOT change anything else about the content
+- Do NOT expand short names to full names (e.g. keep "Gandalf" even if database has "Gandalf the Grey")
+- Do NOT change partial place names to full names (e.g. keep "Waterdeep" even if database has "City of Waterdeep")  
+- Only fix actual misspellings (e.g. "Gandalph" → "Gandalf")
+- Preserve the author's choice of name length and style
+- No rewriting, no improvements, no style changes
 
 Content to check:
 
 {content}
 
-Return the content with only entity name spellings corrected."""
+Return the content with only entity name spellings corrected (not expanded or changed in style)."""
     
     last_error = None
     for attempt in range(max_retries + 1):

@@ -64,7 +64,7 @@ def get_all_entities() -> List[EntityData]:
     -------
     List[EntityData]: List of all entities. Each entity has:
         • name - Entity name (canonical/official spelling)
-        • type - One of: PC, NPC, Location, Organization, Diety, Creature, Object, Concept
+        • type - One of: PC, NPC, Location, Organization, Diety, Creature
         • aliases - Alternative names or titles (comma separated)
         • common_misspelling - Common misspellings found in transcripts (comma separated)
         • description - Brief description of the entity
@@ -108,7 +108,7 @@ def update_existing_entities(entities: List[EntityUpdate]) -> str:
         List of entity updates. Each must have:
         • notion_id - Existing Notion page ID (required to identify the entity)
         • name - Entity name (canonical/official spelling)
-        • type - One of: PC, NPC, Location, Organization, Diety, Creature, Object, Concept
+        • type - One of: PC, NPC, Location, Organization, Diety, Creature
         And optionally:
         • aliases - Alternative names or titles (comma separated)
         • common_misspellings - Common misspellings found in transcripts (comma separated)
@@ -165,7 +165,7 @@ def add_new_entities(wrapper: RunContextWrapper[SessionContext], entities: List[
     entities : List[EntityCreate]
         List of new entities. Each must have:
         • name - Entity name (canonical/official spelling)
-        • type - One of: PC, NPC, Location, Organization, Diety, Creature, Object, Concept
+        • type - One of: PC, NPC, Location, Organization, Diety, Creature
         And optionally:
         • aliases - Alternative names or titles (comma separated)
         • common_misspellings - Common misspellings found in transcripts (comma separated)

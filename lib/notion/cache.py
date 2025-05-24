@@ -15,16 +15,14 @@ from .api import (
 # Database IDs
 ENTITY_DB = "1f97b6a9807880cea2b4dbbf7cf4ad84"
 
-# Valid entity types
+# Valid entity types - only for proper names and specific named entities
 EntityType = Literal[
-    "PC",
-    "NPC",
-    "Location",
-    "Organization",
-    "Diety",
-    "Creature",
-    "Object",
-    "Concept"
+    "PC",        # Player Characters
+    "NPC",       # Non-Player Characters (named individuals)
+    "Location",  # Named places (e.g. "Teghrim's Crossing", "The Whispering Woods")
+    "Organization",  # Named groups (e.g. "The Silver Hawks", "Order of the Dawn")
+    "Diety",     # Named gods and divine beings
+    "Creature"   # Named creatures or creature types with specific names
 ]
 
 class EntityEntry:
@@ -127,9 +125,7 @@ def initialize_cache() -> None:
                 {"name": "Location"},
                 {"name": "Organization"},
                 {"name": "Diety"},
-                {"name": "Creature"},
-                {"name": "Object"},
-                {"name": "Concept"}
+                {"name": "Creature"}
             ]
         }},
         "Aliases": {"rich_text": {}},
