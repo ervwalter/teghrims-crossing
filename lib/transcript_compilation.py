@@ -9,7 +9,7 @@ import re
 from typing import List
 
 from .audio_transcription import transcribe_audio, format_transcript
-from .file_utils import find_unprocessed_sessions
+from .audio_utils import find_unprocessed_sessions
 
 
 def create_session_transcript(date: str, audio_files: List[str], api_key: str, transcripts_dir: str, debug: bool = False) -> None:

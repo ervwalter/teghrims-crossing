@@ -18,7 +18,7 @@ import argparse
 from lib.audio_transcription import transcribe_audio
 from lib.transcript_compilation import auto_process_sessions
 from lib.slice_summarization import process_all_transcripts_to_slices
-from lib.digest_compilation import process_all_sessions_to_digests
+from lib.session_digest import process_all_sessions_to_digests
 from lib.digest_processing import process_all_digests
 from lib.image_generation import process_all_images
 from lib.podcast_generation import process_all_podcasts

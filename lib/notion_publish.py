@@ -9,9 +9,9 @@ from datetime import datetime, date, timezone
 import re
 from typing import Dict, Optional
 
-from lib.memory_tools import list_articles_meta, latest_revision_for_date
+from lib.campaign_memory import list_articles_meta, latest_revision_for_date
 
-from lib.notion_utils import (
+from lib.notion_api import (
     ensure_database_schema,
     create_or_update_database_entry
 )
