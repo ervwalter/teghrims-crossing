@@ -1,6 +1,10 @@
 __pycache__
 .DS_Store
-Audio/
-Podcasts/
-Transcripts/
+# Ignore directories but keep .gitkeep files
+audio/
+# output/
+data/
 *.docx
+
+# But always include .gitkeep files
+!**/.gitkeep
