@@ -1,115 +1,172 @@
-# Teghrim's Crossing - Session Processing Tools
+# Teghrim's Crossing - Session Processing Pipeline
 
-A collection of Python scripts for processing tabletop RPG session recordings into various formats including transcripts, summaries, narratives, and podcasts.
+An automated pipeline for processing tabletop RPG session recordings into transcripts, summaries, narratives, podcasts, and Notion pages.
 
 ## Overview
 
-This toolkit helps manage and transform recordings from tabletop RPG sessions (like D&D) into different formats:
+This system-agnostic toolkit provides a complete workflow for processing tabletop RPG session recordings. While currently used for the "Teghrim's Crossing" Pathfinder 2e campaign, the tools work with any tabletop RPG system:
 
 1. **Audio Transcription**: Convert session recordings to text transcripts with speaker diarization
-2. **AI-Assisted Summaries**: Generate session summaries and narrative versions using AI
-3. **Podcast Creation**: Transform session content into podcast format with voice synthesis
-4. **Document Publishing**: Compile summaries and narratives into formatted DOCX files
+2. **Transcript Slicing**: Break transcripts into overlapping chunks for processing
+3. **Digest Compilation**: Create session digests and update campaign memory
+4. **Content Generation**: Generate summaries, narratives, podcast scripts, and image prompts
+5. **Notion Publishing**: Publish all outputs to a Notion database
+
+## Quick Start
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Set required environment variables
+export OPENAI_API_KEY='your-openai-api-key'
+export NOTION_API_KEY='your-notion-api-key'
+export ELEVEN_API_KEY='your-elevenlabs-api-key'  # Optional, for audio transcription
+
+# Run the complete pipeline
+python process-sessions.py
+```
 
 ## Directory Structure
 
-- `/audio`: Raw audio recordings of sessions (organized by date)
-- `/transcripts`: Transcribed text from audio recordings
-- `/Summaries`: Generated summaries, narratives, and podcast scripts
-- `/Podcasts`: Generated podcast audio files
-- `/references`: Reference materials for the campaign
-- `/memory`: Campaign memory database and information
-- `/Prompts`: AI prompts for generating different types of content
-- `/Images`: Generated or stored images related to sessions
+- `/audio`: Raw audio recordings of sessions
+- `/data`: Session data files (participants, locations, etc.)
+- `/lib`: Core processing modules
+- `/memory`: Campaign memory articles
+- `/output`: Generated outputs (summaries, podcasts, images)
+- `/prompts`: AI prompt templates
+- `/references`: Campaign reference materials
+- `/transcripts`: Processed transcripts
+  - `/raw-transcripts`: Initial transcriptions
+  - `/slices`: Chunked transcript segments
+  - `/digests`: Compiled session digests
 
-## Scripts
+## Main Script
 
-### `process_audio.py`
+### `process-sessions.py`
 
-Transcribes audio recordings using ElevenLabs Speech-to-Text API with speaker diarization.
+The main orchestrator that runs the complete 5-step pipeline:
 
-```
-Usage:
-  python process_audio.py                      # Auto mode: processes all unprocessed sessions
-  python process_audio.py --single <audio_file> # Process a single file
-```
-
-### `transcript_agent.py`
-
-Uses OpenAI's Agents SDK to process transcripts and generate summaries, narratives, and other content.
-
-```
-Usage:
-  python transcript_agent.py
+```bash
+python process-sessions.py  # Runs all steps sequentially
 ```
 
-### `create_podcasts.py`
+Each step can be skipped based on environment variables or existing outputs.
 
-Converts podcast scripts into audio files using ElevenLabs text-to-speech API.
+## Pipeline Steps
 
-```
-Usage:
-  python create_podcasts.py
-```
+### Step 1: Audio Transcription
+- **Module**: `lib/audio_transcription.py`
+- **Purpose**: Transcribes audio files using ElevenLabs API
+- **Output**: Raw transcripts in `/transcripts/raw-transcripts/`
+- **Note**: Skipped if `ELEVEN_API_KEY` not set
 
-### `create_docx.py`
+### Step 2: Transcript Slicing
+- **Module**: `lib/transcript_slicing.py`
+- **Purpose**: Breaks transcripts into overlapping chunks (30% overlap)
+- **Output**: Sliced transcripts in `/transcripts/slices/`
 
-Combines markdown files from the Summaries folder and converts them to DOCX format.
+### Step 3: Digest Compilation
+- **Module**: `lib/digest_compilation.py`
+- **Purpose**: Compiles slices into session digests
+- **Features**: 
+  - Entity detection and extraction
+  - Memory article updates
+  - Temporal consistency tracking
+- **Output**: Session digests in `/transcripts/digests/`
 
-```
-Usage:
-  python create_docx.py
-```
+### Step 4: Digest Processing
+- **Module**: `lib/digest_processing.py`
+- **Purpose**: Generates various content formats from digests
+- **Outputs**:
+  - Session summaries
+  - Narrative versions
+  - Podcast scripts
+  - Key events for image generation
+- **Templates**: Uses prompts from `/prompts/`
+
+### Step 5: Notion Publishing
+- **Module**: `lib/notion_publish.py`
+- **Purpose**: Publishes all outputs to Notion
+- **Features**:
+  - Entity synchronization
+  - Page creation and updates
+  - Attachment handling
+
+## Key Libraries
+
+### Agent Tools
+The system uses OpenAI's Agents SDK with custom function tools:
+
+- **`lib/reference_utils.py`**: Access campaign reference materials
+- **`lib/memory_tools.py`**: Query and update memory articles
+- **`lib/notion_tools.py`**: Interact with Notion entity database
+
+### Entity Management
+- **`lib/notion_cache.py`**: Local cache for Notion entities
+- **`lib/notion_utils.py`**: Notion API utilities
+- Tracks: NPCs, Locations, Organizations, Items, etc.
+
+### Context Management
+- **`lib/context.py`**: SessionContext for temporal consistency
+- Ensures memory queries are "as of" session date
 
 ## Requirements
 
 - Python 3.7+
-- Pandoc (for DOCX conversion)
-- FFmpeg (for audio processing)
+- See `requirements.txt` for Python dependencies
 
-## Python Dependencies
+## Environment Variables
 
-- elevenlabs
-- openai
-- pydub
-- agents (OpenAI Agents SDK)
-- yaml
-- pathlib
+```bash
+# Required for all AI processing
+export OPENAI_API_KEY='your-openai-api-key'
 
-## Environment Setup
+# Required for Notion publishing
+export NOTION_API_KEY='your-notion-api-key'
 
-1. Set up required environment variables:
-   ```
-   # Required for process_audio.py and create_podcasts.py
-   export ELEVEN_API_KEY='your-elevenlabs-api-key'
-   
-   # Required for transcript_agent.py
-   export OPENAI_API_KEY='your-openai-api-key'
-   export OPENAI_ORG_ID='your-openai-organization-id'
-   ```
-
-2. Install Python dependencies:
-   ```
-   pip install elevenlabs openai pydub pyyaml
-   ```
-
-3. Install external dependencies:
-   ```
-   # macOS
-   brew install pandoc ffmpeg
-   
-   # Ubuntu/Debian
-   sudo apt-get install pandoc ffmpeg
-   ```
+# Optional - for audio transcription (Step 1)
+export ELEVEN_API_KEY='your-elevenlabs-api-key'
+```
 
 ## Workflow
 
-1. Record your tabletop RPG session
-2. Place audio files in the `/audio` directory with naming format: `YYMMDD_####.mp3`
-3. Run `process_audio.py` to transcribe audio to text
-4. Run `transcript_agent.py` to generate summaries and other content
-5. Run `create_podcasts.py` to generate podcast audio from scripts
-6. Run `create_docx.py` to compile summaries/narratives into documents
+1. **Prepare Session Data**:
+   - Place audio files in `/audio/YYYY-MM-DD/`
+   - Create session info in `/data/YYYY-MM-DD.yaml`
+
+2. **Run Pipeline**:
+   ```bash
+   python process-sessions.py
+   ```
+
+3. **Review Outputs**:
+   - Transcripts in `/transcripts/`
+   - Summaries in `/output/summaries/`
+   - Published to Notion database
+
+## Design Patterns
+
+### Temporal Memory
+The system maintains temporal consistency by:
+- Tracking session dates via SessionContext
+- Querying memory "as of" specific dates
+- Preventing anachronisms in generated content
+
+### Entity Cache
+- All entity operations use local cache
+- Minimizes Notion API calls
+- Ensures consistency across pipeline
+
+### Overlapping Slices
+- 30% overlap between transcript chunks
+- Maintains context across boundaries
+- Improves summary quality
+
+### Prompt Templates
+- All AI prompts externalized in `/prompts/`
+- Easy customization without code changes
+- Consistent formatting across outputs
 
 ## License
 
