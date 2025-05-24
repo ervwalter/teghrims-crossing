@@ -7,6 +7,7 @@ Uses the entity database to correct names while preserving all other content.
 import os
 import glob
 import asyncio
+import time
 from typing import List, Dict, Optional
 from agents import Agent, Runner
 from ..notion.tools import get_all_entities
@@ -15,16 +16,20 @@ from ..memory.context import SessionContext
 from datetime import date
 
 
-async def correct_spelling_with_entities(content: str, entities_context: str) -> str:
+async def correct_spelling_with_entities(content: str, entities_context: str, max_retries: int = 1) -> str:
     """
-    Use OpenAI Agent SDK to correct entity name spellings in content.
+    Use OpenAI Agent SDK to correct entity name spellings in content with retry logic.
     
     Args:
         content: The content to spell-check
         entities_context: String containing all entity information for reference
+        max_retries: Maximum number of retry attempts (default: 1)
         
     Returns:
         str: Content with corrected entity spellings
+        
+    Raises:
+        Exception: If all retry attempts fail
     """
     tools = [get_all_entities]
     
@@ -49,7 +54,7 @@ async def correct_spelling_with_entities(content: str, entities_context: str) ->
             "Your goal is to make entity names consistent with the official database while "
             "leaving everything else completely untouched."
         ),
-        model="gpt-4.1",
+        model="gpt-4.1-mini",
         tools=tools
     )
     
@@ -63,8 +68,32 @@ Content to check:
 
 Return the content with only entity name spellings corrected."""
     
-    result = await Runner.run(agent, prompt, context=session_context)
-    return result.final_output
+    last_error = None
+    for attempt in range(max_retries + 1):
+        try:
+            result = await Runner.run(agent, prompt, context=session_context)
+            return result.final_output
+        except Exception as e:
+            last_error = e
+            error_msg = str(e)
+            
+            # Clean up error message - remove HTML and keep only useful info
+            if "<!DOCTYPE html>" in error_msg or "<html>" in error_msg:
+                # Extract just the first line or a simple message
+                lines = error_msg.split('\n')
+                clean_msg = lines[0] if lines else "API request failed"
+                if len(clean_msg) > 200:  # Truncate very long error messages
+                    clean_msg = clean_msg[:200] + "..."
+                error_msg = clean_msg
+            
+            if attempt < max_retries:
+                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s...
+                print(f"  ⚠️  Attempt {attempt + 1} failed: {error_msg}")
+                print(f"  🔄 Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                print(f"  ❌ All attempts failed. Last error: {error_msg}")
+                raise last_error
 
 
 def get_entities_context() -> str:
@@ -101,9 +130,9 @@ def process_summary_files() -> List[str]:
             with open(file_path, 'r', encoding='utf-8') as f:
                 original_content = f.read()
             
-            # Correct spelling
+            # Correct spelling with retry logic
             corrected_content = asyncio.run(
-                correct_spelling_with_entities(original_content, entities_context)
+                correct_spelling_with_entities(original_content, entities_context, max_retries=1)
             )
             
             # Only write if content changed
@@ -116,7 +145,13 @@ def process_summary_files() -> List[str]:
                 print(f"  ℹ️  No changes needed for {os.path.basename(file_path)}")
                 
         except Exception as e:
-            print(f"  ❌ Error processing {os.path.basename(file_path)}: {str(e)}")
+            error_msg = str(e)
+            # Clean up error message
+            if "<!DOCTYPE html>" in error_msg or "<html>" in error_msg:
+                error_msg = "OpenAI API error (server issues)"
+            elif len(error_msg) > 100:
+                error_msg = error_msg[:100] + "..."
+            print(f"  ❌ Error processing {os.path.basename(file_path)}: {error_msg}")
             continue
     
     return processed_files
@@ -154,9 +189,9 @@ def process_campaign_memory_articles() -> List[str]:
                 print(f"  ℹ️  No content found for {slug}")
                 continue
             
-            # Correct spelling
+            # Correct spelling with retry logic
             corrected_content = asyncio.run(
-                correct_spelling_with_entities(latest_content, entities_context)
+                correct_spelling_with_entities(latest_content, entities_context, max_retries=1)
             )
             
             # Only update if content changed
@@ -175,7 +210,13 @@ def process_campaign_memory_articles() -> List[str]:
                 print(f"  ℹ️  No changes needed for {slug}")
                 
         except Exception as e:
-            print(f"  ❌ Error processing {slug}: {str(e)}")
+            error_msg = str(e)
+            # Clean up error message
+            if "<!DOCTYPE html>" in error_msg or "<html>" in error_msg:
+                error_msg = "OpenAI API error (server issues)"
+            elif len(error_msg) > 100:
+                error_msg = error_msg[:100] + "..."
+            print(f"  ❌ Error processing {slug}: {error_msg}")
             continue
     
     return updated_articles

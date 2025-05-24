@@ -6,6 +6,7 @@ Functions for processing session digests with various prompts using the OpenAI A
 import os
 import glob
 import re
+import time
 from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 import asyncio
@@ -192,9 +193,10 @@ def save_output(content: str, session_date: str, prompt_name: str) -> Optional[s
 
 async def process_digest_with_prompt(digest_content: str, session_date: str, prompt_name: str, 
                                     prompt_content: str, openai_api_key: str, 
-                                    previous_output: Optional[Tuple[str, str]] = None) -> Optional[str]:
+                                    previous_output: Optional[Tuple[str, str]] = None,
+                                    max_retries: int = 1) -> Optional[str]:
     """
-    Process a digest with a specific prompt using the agent SDK.
+    Process a digest with a specific prompt using the agent SDK with retry logic.
     
     Args:
         digest_content: Content of the digest
@@ -202,6 +204,7 @@ async def process_digest_with_prompt(digest_content: str, session_date: str, pro
         prompt_name: Name of the prompt file without extension
         openai_api_key: OpenAI API key
         previous_output: Tuple containing the date and content of previous output (optional)
+        max_retries: Maximum number of retry attempts (default: 1)
         
     Returns:
         str: Generated content from the agent, or None if there was an error
@@ -255,13 +258,32 @@ After gathering this information, FOLLOW THESE SPECIFIC INSTRUCTIONS EXACTLY:
     # Add the digest content
     user_prompt += f"\n\nHere's the session digest to process:\n\n{digest_content}"
     
-    try:
-        # Run the agent with session context
-        result = await Runner.run(agent, user_prompt, context=session_context)
-        return result.final_output
-    except Exception as e:
-        print(f"Error running agent for {prompt_name} on session {session_date}: {str(e)}")
-        return None
+    last_error = None
+    for attempt in range(max_retries + 1):
+        try:
+            # Run the agent with session context
+            result = await Runner.run(agent, user_prompt, context=session_context)
+            return result.final_output
+        except Exception as e:
+            last_error = e
+            error_msg = str(e)
+            
+            # Clean up error message - remove HTML and keep only useful info
+            if "<!DOCTYPE html>" in error_msg or "<html>" in error_msg:
+                lines = error_msg.split('\n')
+                clean_msg = lines[0] if lines else "API request failed"
+                if len(clean_msg) > 200:
+                    clean_msg = clean_msg[:200] + "..."
+                error_msg = clean_msg
+            
+            if attempt < max_retries:
+                wait_time = 2 ** attempt
+                print(f"  ⚠️  {prompt_name} attempt {attempt + 1} failed: {error_msg}")
+                print(f"  🔄 Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                print(f"Error running agent for {prompt_name} on session {session_date}: {error_msg}")
+                return None
 
 
 def get_available_prompts() -> List[Dict[str, str]]:
@@ -348,7 +370,8 @@ def process_digest(digest_path: str, session_date: str, openai_api_key: str) -> 
             prompt_name,
             prompt_content,
             openai_api_key, 
-            previous_output
+            previous_output,
+            max_retries=1
         ))
         
         if output:

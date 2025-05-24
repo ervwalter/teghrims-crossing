@@ -4,6 +4,7 @@ Functions for updating campaign knowledge (articles and entities) based on sessi
 """
 
 import asyncio
+import time
 from agents import Agent, Runner
 from ..memory.tools import list_articles, get_articles, update_article
 from ..memory.references import list_reference_files, retrieve_reference_files
@@ -11,13 +12,14 @@ from ..notion.tools import get_all_entities, add_new_entities, update_existing_e
 from ..memory.context import SessionContext
 
 
-def update_campaign_knowledge(session_date: str, openai_api_key: str, digest_content: str) -> None:
+def update_campaign_knowledge(session_date: str, openai_api_key: str, digest_content: str, max_retries: int = 1) -> None:
     """
     Use an agent to process the session digest and update campaign knowledge (articles and entities) accordingly.
     Args:
         session_date: The date of the session in YYYY-MM-DD format
         openai_api_key: OpenAI API key
         digest_content: Content of the session digest
+        max_retries: Maximum number of retry attempts (default: 1)
     """
     # Tools for updating articles and entities
     tools = [
@@ -78,7 +80,31 @@ def update_campaign_knowledge(session_date: str, openai_api_key: str, digest_con
     )
 
     async def run_update():
-        result = await Runner.run(agent, prompt, context=session_context)
-        print("Campaign knowledge update agent output:\n", result.final_output)
+        last_error = None
+        for attempt in range(max_retries + 1):
+            try:
+                result = await Runner.run(agent, prompt, context=session_context)
+                print("Campaign knowledge update agent output:\n", result.final_output)
+                return
+            except Exception as e:
+                last_error = e
+                error_msg = str(e)
+                
+                # Clean up error message - remove HTML and keep only useful info
+                if "<!DOCTYPE html>" in error_msg or "<html>" in error_msg:
+                    lines = error_msg.split('\n')
+                    clean_msg = lines[0] if lines else "API request failed"
+                    if len(clean_msg) > 200:
+                        clean_msg = clean_msg[:200] + "..."
+                    error_msg = clean_msg
+                
+                if attempt < max_retries:
+                    wait_time = 2 ** attempt
+                    print(f"  ⚠️  Campaign knowledge update attempt {attempt + 1} failed: {error_msg}")
+                    print(f"  🔄 Retrying in {wait_time} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"Error updating campaign knowledge for {session_date}: {error_msg}")
+                    raise last_error
 
     asyncio.run(run_update())

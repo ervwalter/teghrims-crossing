@@ -198,10 +198,32 @@ Create one **Session Digest** that:
     # Combine prompt with slices
     user_input = prompt + "\n\n" + combined_slices
     
-    # Run the agent with session context
-    result = await Runner.run(agent, user_input, context=session_context)
-    
-    return result.final_output
+    # Run the agent with session context and retry logic
+    last_error = None
+    for attempt in range(max_retries + 1):
+        try:
+            result = await Runner.run(agent, user_input, context=session_context)
+            return result.final_output
+        except Exception as e:
+            last_error = e
+            error_msg = str(e)
+            
+            # Clean up error message - remove HTML and keep only useful info
+            if "<!DOCTYPE html>" in error_msg or "<html>" in error_msg:
+                lines = error_msg.split('\n')
+                clean_msg = lines[0] if lines else "API request failed"
+                if len(clean_msg) > 200:
+                    clean_msg = clean_msg[:200] + "..."
+                error_msg = clean_msg
+            
+            if attempt < max_retries:
+                wait_time = 2 ** attempt
+                print(f"  ⚠️  Session digest attempt {attempt + 1} failed: {error_msg}")
+                print(f"  🔄 Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                print(f"Error processing session digest for {session_date}: {error_msg}")
+                raise last_error
 
 
 def combine_session_slices(session_date: str, openai_api_key: str) -> Optional[str]:
@@ -237,7 +259,7 @@ def combine_session_slices(session_date: str, openai_api_key: str) -> Optional[s
     try:
         # Process combined slices
         print(f"Processing combined slices for session {session_date}...")
-        session_digest = asyncio.run(process_combined_slices(combined_slices, openai_api_key, session_date))
+        session_digest = asyncio.run(process_combined_slices(combined_slices, openai_api_key, session_date, max_retries=1))
         
         # Save the result
         with open(output_file, "w", encoding="utf-8") as f:
