@@ -28,7 +28,13 @@ from lib.notion.cache import initialize_cache, sync_to_notion
 
 def main():
     """Main entry point."""
-    # Get API keys from environment variables
+    # Parse command line arguments first (so --help works without initialization)
+    parser = argparse.ArgumentParser(description="Process audio files to generate transcripts, slice them, and combine into session bibles.")
+    parser.add_argument('--timeout', type=int, default=300, help='Timeout in seconds for API calls (default: 300)')
+    parser.add_argument('--retries', type=int, default=2, help='Maximum number of retry attempts for API calls (default: 2)')
+    args = parser.parse_args()
+    
+    # Get API keys from environment variables (after parsing args so --help works)
     openai_api_key = os.environ.get("OPENAI_API_KEY")
     if not openai_api_key:
         print("Error: OPENAI_API_KEY environment variable not set")
@@ -51,12 +57,6 @@ def main():
     except Exception as e:
         print(f"Error initializing Notion cache: {e}")
         sys.exit(1)
-    
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Process audio files to generate transcripts, slice them, and combine into session bibles.")
-    parser.add_argument('--timeout', type=int, default=300, help='Timeout in seconds for API calls (default: 300)')
-    parser.add_argument('--retries', type=int, default=2, help='Maximum number of retry attempts for API calls (default: 2)')
-    args = parser.parse_args()
     
     # Set up paths
     base_dir = os.path.dirname(os.path.abspath(__file__))
