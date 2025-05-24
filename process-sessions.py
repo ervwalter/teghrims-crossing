@@ -24,6 +24,7 @@ from lib.content.image_generation import process_all_images
 from lib.content.podcast_generation import process_all_podcasts
 from lib.notion.publish import publish_session_outputs
 from lib.notion.cache import initialize_cache, sync_to_notion
+from lib.content.spelling_correction import run_spelling_correction
 
 
 def main():
@@ -32,6 +33,7 @@ def main():
     parser = argparse.ArgumentParser(description="Process audio files to generate transcripts, slice them, and combine into session bibles.")
     parser.add_argument('--timeout', type=int, default=300, help='Timeout in seconds for API calls (default: 300)')
     parser.add_argument('--retries', type=int, default=2, help='Maximum number of retry attempts for API calls (default: 2)')
+    parser.add_argument('--fix-spelling', action='store_true', help='Fix entity name spelling in existing outputs and campaign memory (skips normal processing)')
     args = parser.parse_args()
     
     # Get API keys from environment variables (after parsing args so --help works)
@@ -62,6 +64,18 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     audio_dir = os.path.join(base_dir, "audio")
     transcripts_dir = os.path.join(base_dir, "data")
+    
+    # Handle spelling correction mode
+    if args.fix_spelling:
+        try:
+            run_spelling_correction(base_dir)
+        except KeyboardInterrupt:
+            print("\n\nSpelling correction interrupted by user.")
+        except Exception as e:
+            print(f"\n\nError during spelling correction: {str(e)}")
+            import traceback
+            traceback.print_exc()
+        return
     
     try:
         # Step 1: Process audio files into transcripts

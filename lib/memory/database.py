@@ -24,7 +24,7 @@ import logging
 from typing import List, Optional, Dict, TypedDict, Tuple, Union
 
 # Set up absolute path to the data directory
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MEMORY_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(MEMORY_DIR, exist_ok=True)
 DB_PATH = Path(os.path.join(MEMORY_DIR, "campaign-memory.db"))
