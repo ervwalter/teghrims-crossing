@@ -20,7 +20,7 @@ class EntityData(TypedDict):
     name: str
     type: str
     aliases: Optional[str]
-    common_mispelling: Optional[str]
+    common_misspellings: Optional[str]
     description: Optional[str]
     notion_id: Optional[str]
 
@@ -31,7 +31,7 @@ class EntityUpdate(TypedDict):
     name: str
     type: str
     aliases: Optional[str]
-    common_mispelling: Optional[str]
+    common_misspellings: Optional[str]
     description: Optional[str]
 
 
@@ -40,7 +40,7 @@ class EntityCreate(TypedDict):
     name: str
     type: str
     aliases: Optional[str]
-    common_mispelling: Optional[str]
+    common_misspellings: Optional[str]
     description: Optional[str]
 
 
@@ -66,7 +66,7 @@ def get_all_entities() -> List[EntityData]:
         • name - Entity name (canonical/official spelling)
         • type - One of: PC, NPC, Location, Organization, Diety, Creature, Object, Concept
         • aliases - Alternative names or titles (comma separated)
-        • common_mispelling - Common misspellings found in transcripts (comma separated)
+        • common_misspelling - Common misspellings found in transcripts (comma separated)
         • description - Brief description of the entity
         • notion_id - Notion page ID (required for updates)
     """
@@ -76,7 +76,7 @@ def get_all_entities() -> List[EntityData]:
             "name": entity.name,
             "type": entity.type,
             "aliases": entity.aliases,
-            "common_mispelling": entity.common_mispelling,
+            "common_misspellings": entity.common_misspellings,
             "description": entity.description,
             "notion_id": entity.notion_id
         })
@@ -111,7 +111,7 @@ def update_existing_entities(entities: List[EntityUpdate]) -> str:
         • type - One of: PC, NPC, Location, Organization, Diety, Creature, Object, Concept
         And optionally:
         • aliases - Alternative names or titles (comma separated)
-        • common_mispelling - Common misspellings found in transcripts (comma separated)
+        • common_misspellings - Common misspellings found in transcripts (comma separated)
         • description - Brief description of the entity
     
     Returns
@@ -129,7 +129,7 @@ def update_existing_entities(entities: List[EntityUpdate]) -> str:
             name=entity_data["name"],
             type=entity_data["type"],
             aliases=entity_data.get("aliases"),
-            common_mispelling=entity_data.get("common_mispelling"),
+            common_misspellings=entity_data.get("common_misspellings"),
             description=entity_data.get("description")
         )
     
@@ -156,7 +156,7 @@ def add_new_entities(wrapper: RunContextWrapper[SessionContext], entities: List[
     By capturing new entities as they appear, we maintain a comprehensive reference
     of all named elements in the game world and ensure consistent spelling in future
     materials. If you detect misspellings in the transcript, include them in the
-    common_mispelling field to help with future name resolution.
+    common_misspellings field to help with future name resolution.
     
     Parameters
     ----------
@@ -168,7 +168,7 @@ def add_new_entities(wrapper: RunContextWrapper[SessionContext], entities: List[
         • type - One of: PC, NPC, Location, Organization, Diety, Creature, Object, Concept
         And optionally:
         • aliases - Alternative names or titles (comma separated)
-        • common_mispelling - Common misspellings found in transcripts (comma separated)
+        • common_misspellings - Common misspellings found in transcripts (comma separated)
         • description - Brief description of the entity based on context
     
     Returns
@@ -188,7 +188,7 @@ def add_new_entities(wrapper: RunContextWrapper[SessionContext], entities: List[
             name=entity_data["name"],
             type=entity_data["type"],
             aliases=entity_data.get("aliases"),
-            common_mispelling=entity_data.get("common_mispelling"),
+            common_misspellings=entity_data.get("common_misspellings"),
             description=entity_data.get("description"),
             first_appearance=first_appearance
         )

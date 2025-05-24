@@ -34,7 +34,7 @@ class EntityEntry:
         name: str,
         type: EntityType,
         aliases: Optional[str] = None,
-        common_mispelling: Optional[str] = None,
+        common_misspellings: Optional[str] = None,
         description: Optional[str] = None,
         first_appearance: Optional[str] = None,
         notion_id: Optional[str] = None,
@@ -43,7 +43,7 @@ class EntityEntry:
         self.name = name
         self.type = type
         self.aliases = aliases or ""
-        self.common_mispelling = common_mispelling or ""
+        self.common_misspellings = common_misspellings or ""
         self.description = description or ""
         self.first_appearance = first_appearance
         self.notion_id = notion_id
@@ -71,12 +71,12 @@ class EntityEntry:
                     }
                 }] if self.aliases else []
             },
-            "Common Mispelling": {
+            "Common Misspellings": {
                 "rich_text": [{
                     "text": {
-                        "content": self.common_mispelling
+                        "content": self.common_misspellings
                     }
-                }] if self.common_mispelling else []
+                }] if self.common_misspellings else []
             },
             "Description": {
                 "rich_text": [{
@@ -99,7 +99,7 @@ class EntityEntry:
             name=properties["Name"]["title"][0]["text"]["content"] if properties["Name"]["title"] else "",
             type=properties["Type"]["select"]["name"],
             aliases=properties["Aliases"]["rich_text"][0]["text"]["content"] if properties["Aliases"]["rich_text"] else "",
-            common_mispelling=properties["Common Mispelling"]["rich_text"][0]["text"]["content"] if properties["Common Mispelling"]["rich_text"] else "",
+            common_misspellings=properties["Common Misspellings"]["rich_text"][0]["text"]["content"] if properties["Common Misspellings"]["rich_text"] else "",
             description=properties["Description"]["rich_text"][0]["text"]["content"] if properties["Description"]["rich_text"] else "",
             first_appearance=properties["First Appearance"]["date"]["start"] if properties["First Appearance"]["date"] else None,
             notion_id=notion_id,
@@ -133,7 +133,7 @@ def initialize_cache() -> None:
             ]
         }},
         "Aliases": {"rich_text": {}},
-        "Common Mispelling": {"rich_text": {}},
+        "Common Misspellings": {"rich_text": {}},
         "Description": {"rich_text": {}},
         "First Appearance": {"date": {}}
     }
@@ -165,7 +165,7 @@ def update_entity(
     name: str,
     type: EntityType,
     aliases: Optional[str] = None,
-    common_mispelling: Optional[str] = None,
+    s: Optional[str] = None,
     description: Optional[str] = None,
     first_appearance: Optional[str] = None
 ) -> EntityEntry:
@@ -182,8 +182,8 @@ def update_entity(
         if aliases is not None and aliases != entity.aliases:
             entity.aliases = aliases
             entity.modified = True
-        if common_mispelling is not None and common_mispelling != entity.common_mispelling:
-            entity.common_mispelling = common_mispelling
+        if common_misspellings is not None and common_misspellings != entity.common_misspellings:
+            entity.common_misspellings = common_misspellings
             entity.modified = True
         if description is not None and description != entity.description:
             entity.description = description
@@ -197,7 +197,7 @@ def update_entity(
             name=name,
             type=type,
             aliases=aliases,
-            common_mispelling=common_mispelling,
+            common_misspellings=common_misspellings,
             description=description,
             first_appearance=first_appearance
         )
