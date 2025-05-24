@@ -29,3 +29,9 @@ player: Michael
     race: Duergar
     weapon: Warhammer
 
+player: Kent
+    character: Alrik Grimmelstang
+    class: Cleric
+    race: Dwarf
+    weapon: Longsword
+    

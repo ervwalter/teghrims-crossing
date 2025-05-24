@@ -149,7 +149,7 @@ def auto_process_sessions(api_key: str, debug: bool = False, timeout: int = 300,
     # Set up paths
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     audio_dir = os.path.join(base_dir, "audio")
-    transcripts_dir = os.path.join(base_dir, "transcripts")
+    transcripts_dir = os.path.join(base_dir, "data")
     
     print(f"Looking for unprocessed sessions in {audio_dir}...\n")
     

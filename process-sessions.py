@@ -59,7 +59,7 @@ def main():
     # Set up paths
     base_dir = os.path.dirname(os.path.abspath(__file__))
     audio_dir = os.path.join(base_dir, "audio")
-    transcripts_dir = os.path.join(base_dir, "transcripts")
+    transcripts_dir = os.path.join(base_dir, "data")
     
     try:
         # Step 1: Process audio files into transcripts

@@ -116,7 +116,7 @@ def process_transcript_slices(transcript_path: str, openai_api_key: str, model: 
     slices = slice_transcript(transcript_text, slice_minutes, overlap_minutes)
     
     # Create directory for processed slices
-    base_dir = os.path.dirname(os.path.dirname(transcript_path))  # Go up to the transcripts directory
+    base_dir = os.path.dirname(os.path.dirname(transcript_path))  # Go up to the data directory
     date = os.path.basename(transcript_path).replace(".md", "")
     slices_dir = os.path.join(base_dir, "slices", date)
     os.makedirs(slices_dir, exist_ok=True)
@@ -165,7 +165,7 @@ def process_all_transcripts_to_slices(openai_api_key: str) -> None:
     model = "gpt-4.1"
     # Set up paths
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    raw_transcripts_dir = os.path.join(base_dir, "transcripts", "raw-transcripts")
+    raw_transcripts_dir = os.path.join(base_dir, "data", "raw-transcripts")
     
     if not os.path.exists(raw_transcripts_dir):
         print(f"No transcripts directory found at {raw_transcripts_dir}")

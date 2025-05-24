@@ -22,7 +22,7 @@ Use this structured information as the basis for your summary, ensuring proper s
 - Character relationships and dynamics
 - Important character moments or growth
 - Any significant changes to character abilities, equipment, or status
-- Include at least one tidbit for each of the player characters present in the session. Player characters are listed in the reference materials.
+- Note, not all players/characters are present in every session.  No need to reference characters not part of the digest for a given session
 
 3. Combat Encounters
 - Brief descriptions of major battles
@@ -59,9 +59,6 @@ A brief (2-3 sentence) overview of the session's main events and accomplishments
 
 ## Story Developments
 Write story developments as a flowing narrative, organized chronologically. Use paragraph breaks to separate distinct scenes or developments. Bold important discoveries, names, or items on their first mention.
-
-## Notable Character Moments
-List significant character developments or roleplay moments. One or two sentences per point, focusing on meaningful interactions or decisions.
 
 ## Combat & Challenges
 Describe significant battles or challenges narratively, focusing on memorable moments and important outcomes rather than mechanical details.

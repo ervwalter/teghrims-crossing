@@ -25,7 +25,7 @@ def get_session_digests() -> List[Dict]:
         List of dictionaries containing session date and path to the digest file
     """
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    digests_dir = os.path.join(base_dir, "transcripts", "digests")
+    digests_dir = os.path.join(base_dir, "data", "digests")
     
     if not os.path.exists(digests_dir):
         print(f"No digests directory found at {digests_dir}")

@@ -63,7 +63,7 @@ Using the provided campaign context and session digest, create a dramatically co
 
 ## Name and Reference Guidelines
 
-- Use correct name spellings from the people-and-names.md file.  This is very important.  The people and names reference also includes common mispellings so you can avoid mistakes.
+- Use correct name spellings from the people-and-names.md file.  This is very important.  The people and names reference also includes common misspellings so you can avoid mistakes.
 - For similar names, treat as the same character if context supports it
 - If uncertain about a name reference, use best judgment and maintain consistency
 - For new names, use the clearest version from the transcript

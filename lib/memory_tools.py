@@ -33,9 +33,9 @@ from typing import List, Optional, Dict, TypedDict, Tuple, Union
 from agents import RunContextWrapper, function_tool
 from .context import SessionContext
 
-# Set up absolute path to the memory directory
+# Set up absolute path to the data directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MEMORY_DIR = os.path.join(BASE_DIR, "memory")
+MEMORY_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(MEMORY_DIR, exist_ok=True)
 DB_PATH = Path(os.path.join(MEMORY_DIR, "campaign-memory.db"))
 
