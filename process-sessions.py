@@ -68,7 +68,7 @@ def main():
     # Handle spelling correction mode
     if args.fix_spelling:
         try:
-            run_spelling_correction(base_dir)
+            run_spelling_correction()
         except KeyboardInterrupt:
             print("\n\nSpelling correction interrupted by user.")
         except Exception as e:

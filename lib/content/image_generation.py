@@ -14,6 +14,8 @@ try:
 except ImportError:
     OpenAI = None
 
+from ..config import SUMMARIES_DIR, IMAGES_DIR
+
 
 def parse_image_prompts(content: str) -> List[Dict[str, str]]:
     """
@@ -164,9 +166,8 @@ def process_all_images(openai_api_key: str) -> None:
     Args:
         openai_api_key: OpenAI API key
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    summaries_dir = os.path.join(base_dir, "output", "summaries")
-    images_dir = os.path.join(base_dir, "output", "images")
+    summaries_dir = SUMMARIES_DIR
+    images_dir = IMAGES_DIR
     
     # Ensure images directory exists
     os.makedirs(images_dir, exist_ok=True)

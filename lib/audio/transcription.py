@@ -183,7 +183,7 @@ def transcribe_audio(file_path: str, api_key: str, num_speakers: int = 6, debug:
         # Save the transcript only if not part of a batch process
         if output_file is None:
             # Create raw-transcripts directory if it doesn't exist
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             raw_transcripts_dir = os.path.join(base_dir, "data", "raw-transcripts")
             os.makedirs(raw_transcripts_dir, exist_ok=True)
             

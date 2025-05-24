@@ -38,8 +38,8 @@ def get_player_roster():
         str: Player roster content without frontmatter
     """
     try:
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        roster_path = os.path.join(base_dir, "references", "player-roster.md")
+        from ..config import REFERENCES_DIR
+        roster_path = os.path.join(REFERENCES_DIR, "player-roster.md")
         
         if not os.path.exists(roster_path):
             return ""
@@ -62,8 +62,8 @@ def list_reference_files() -> List[Dict[str, str]]:
     List all available reference files in the references directory with descriptions.
     Returns a list of dictionaries containing filename and description for each markdown file.
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    references_dir = os.path.join(base_dir, "references")
+    from ..config import REFERENCES_DIR
+    references_dir = REFERENCES_DIR
     if not os.path.exists(references_dir):
         return [{"filename": "error", "description": "references directory not found"}]
     
@@ -104,8 +104,8 @@ def retrieve_reference_files(filenames: List[str]) -> dict:
     Returns:
         A dictionary mapping filenames to their contents.
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    references_dir = os.path.join(base_dir, "references")
+    from ..config import REFERENCES_DIR
+    references_dir = REFERENCES_DIR
     
     if not os.path.exists(references_dir):
         return {"error": "references directory not found"}

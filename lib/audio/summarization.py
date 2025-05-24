@@ -164,7 +164,7 @@ def process_all_transcripts_to_slices(openai_api_key: str) -> None:
     # Use a fixed model
     model = "gpt-4.1"
     # Set up paths
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     raw_transcripts_dir = os.path.join(base_dir, "data", "raw-transcripts")
     
     if not os.path.exists(raw_transcripts_dir):

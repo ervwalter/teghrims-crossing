@@ -147,7 +147,7 @@ def auto_process_sessions(api_key: str, debug: bool = False, timeout: int = 300,
         retries: Maximum number of retry attempts for API calls
     """
     # Set up paths
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     audio_dir = os.path.join(base_dir, "audio")
     transcripts_dir = os.path.join(base_dir, "data")
     

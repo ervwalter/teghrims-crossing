@@ -10,6 +10,7 @@ import re
 from typing import Dict, Optional
 
 from ..memory.database import list_articles_meta, latest_revision_for_date
+from ..config import SUMMARIES_DIR, PROJECT_ROOT
 
 from .api import (
     ensure_database_schema,
@@ -76,7 +77,7 @@ def publish_session_summaries(base_dir: str) -> None:
     ensure_database_schema(SESSION_SUMMARIES_DB, schema)
     
     # Find all session summary files
-    summaries_dir = os.path.join(base_dir, "output", "summaries")
+    summaries_dir = SUMMARIES_DIR
     pattern = os.path.join(summaries_dir, "session-summary.*.md")
     
     for file_path in glob.glob(pattern):
@@ -257,7 +258,7 @@ def publish_session_narratives(base_dir: str) -> None:
     ensure_database_schema(SESSION_NARRATIVES_DB, schema)
     
     # Find all session narrative files
-    narrative_dir = os.path.join(base_dir, "output", "summaries")
+    narrative_dir = SUMMARIES_DIR
     pattern = os.path.join(narrative_dir, "session-narrative.*.md")
     narrative_files = glob.glob(pattern)
     
@@ -340,8 +341,7 @@ def publish_session_outputs(base_dir: str) -> None:
 
 def main():
     """Main entry point when run as a script."""
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    publish_session_outputs(base_dir)
+    publish_session_outputs(PROJECT_ROOT)
 
 
 if __name__ == "__main__":

@@ -73,17 +73,15 @@ def get_entities_context() -> str:
     return "Entity information will be retrieved using the get_all_entities tool."
 
 
-def process_summary_files(base_dir: str) -> List[str]:
+def process_summary_files() -> List[str]:
     """
     Process all files in output/summaries/ for spelling corrections.
-    
-    Args:
-        base_dir: Base directory of the project
         
     Returns:
         List of processed file paths
     """
-    summaries_dir = os.path.join(base_dir, "output", "summaries")
+    from ..config import SUMMARIES_DIR
+    summaries_dir = SUMMARIES_DIR
     if not os.path.exists(summaries_dir):
         print("No summaries directory found")
         return []
@@ -183,18 +181,15 @@ def process_campaign_memory_articles() -> List[str]:
     return updated_articles
 
 
-def run_spelling_correction(base_dir: str) -> None:
+def run_spelling_correction() -> None:
     """
     Main function to run spelling correction on all content.
-    
-    Args:
-        base_dir: Base directory of the project
     """
     print("Starting spelling correction process...\n")
     
     # Process summary files
     print("=== Processing Summary Files ===")
-    processed_summaries = process_summary_files(base_dir)
+    processed_summaries = process_summary_files()
     
     print(f"\nProcessed {len(processed_summaries)} summary files\n")
     
@@ -213,7 +208,8 @@ def run_spelling_correction(base_dir: str) -> None:
             print("Publishing summary updates to Notion...")
             try:
                 from ..notion.publish import publish_session_outputs
-                publish_session_outputs(base_dir)
+                from ..config import PROJECT_ROOT
+                publish_session_outputs(PROJECT_ROOT)
                 print("✅ Summary updates published to Notion")
             except Exception as e:
                 print(f"❌ Error publishing summaries to Notion: {str(e)}")

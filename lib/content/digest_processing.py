@@ -15,6 +15,7 @@ from ..memory.references import list_reference_files, retrieve_reference_files
 from ..memory.tools import list_articles, get_articles
 from ..notion.tools import get_all_entities
 from ..memory.context import SessionContext
+from ..config import DIGESTS_DIR, PROMPTS_DIR, SUMMARIES_DIR
 
 
 def get_session_digests() -> List[Dict]:
@@ -24,8 +25,7 @@ def get_session_digests() -> List[Dict]:
     Returns:
         List of dictionaries containing session date and path to the digest file
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    digests_dir = os.path.join(base_dir, "data", "digests")
+    digests_dir = DIGESTS_DIR
     
     if not os.path.exists(digests_dir):
         print(f"No digests directory found at {digests_dir}")
@@ -65,8 +65,7 @@ def get_prompt_content(prompt_name: str) -> Optional[str]:
     Returns:
         str: Content of the prompt file, or None if not found
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    prompt_path = os.path.join(base_dir, "prompts", f"{prompt_name}.md")
+    prompt_path = os.path.join(PROMPTS_DIR, f"{prompt_name}.md")
     
     if not os.path.exists(prompt_path):
         print(f"Error: Prompt file not found: {prompt_path}")
@@ -110,8 +109,7 @@ def get_previous_output(session_date: str, prompt_name: str) -> Optional[Tuple[s
         Tuple[str, str]: Tuple containing the date and content of the previous output,
                          or (None, None) if not found
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    output_dir = os.path.join(base_dir, "output", "summaries")
+    output_dir = SUMMARIES_DIR
     
     if not os.path.exists(output_dir):
         return None, None
@@ -162,9 +160,7 @@ def output_exists(session_date: str, prompt_name: str) -> bool:
     Returns:
         bool: True if the output file exists, False otherwise
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    output_dir = os.path.join(base_dir, "output", "summaries")
-    output_file = os.path.join(output_dir, f"{prompt_name}.{session_date}.md")
+    output_file = os.path.join(SUMMARIES_DIR, f"{prompt_name}.{session_date}.md")
     
     return os.path.exists(output_file)
 
@@ -181,11 +177,9 @@ def save_output(content: str, session_date: str, prompt_name: str) -> Optional[s
     Returns:
         str: Path to the saved file, or None if there was an error
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    output_dir = os.path.join(base_dir, "output", "summaries")
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(SUMMARIES_DIR, exist_ok=True)
     
-    output_file = os.path.join(output_dir, f"{prompt_name}.{session_date}.md")
+    output_file = os.path.join(SUMMARIES_DIR, f"{prompt_name}.{session_date}.md")
     
     try:
         with open(output_file, "w", encoding="utf-8") as f:
@@ -277,8 +271,7 @@ def get_available_prompts() -> List[Dict[str, str]]:
     Returns:
         List of dictionaries containing prompt name and path
     """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    prompts_dir = os.path.join(base_dir, "prompts")
+    prompts_dir = PROMPTS_DIR
     
     if not os.path.exists(prompts_dir):
         print(f"Error: Prompts directory not found at {prompts_dir}")

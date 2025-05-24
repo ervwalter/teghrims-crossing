@@ -12,6 +12,8 @@ from pathlib import Path
 import time
 from typing import List, Tuple, Optional
 
+from ..config import SUMMARIES_DIR, PODCASTS_DIR
+
 try:
     from elevenlabs import Voice, VoiceSettings
     from elevenlabs.client import ElevenLabs
@@ -258,9 +260,8 @@ def process_all_podcasts(eleven_api_key: str) -> None:
         print(f"Error initializing ElevenLabs client: {e}")
         return
 
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    summaries_dir = Path(base_dir) / "output" / "summaries"
-    podcasts_dir = Path(base_dir) / "output" / "podcasts"
+    summaries_dir = Path(SUMMARIES_DIR)
+    podcasts_dir = Path(PODCASTS_DIR)
     
     # Ensure podcasts directory exists
     podcasts_dir.mkdir(parents=True, exist_ok=True)

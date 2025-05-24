@@ -1,10 +1,46 @@
-__pycache__
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# macOS
 .DS_Store
-# Ignore directories but keep .gitkeep files
+.AppleDouble
+.LSOverride
+
+# Project-specific directories
 audio/
-# output/
 data/
 *.docx
 
 # But always include .gitkeep files
 !**/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.venv
+env/
+venv/
