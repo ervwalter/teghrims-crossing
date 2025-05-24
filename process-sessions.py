@@ -20,6 +20,8 @@ from lib.transcript_compilation import auto_process_sessions
 from lib.slice_summarization import process_all_transcripts_to_slices
 from lib.digest_compilation import process_all_sessions_to_digests
 from lib.digest_processing import process_all_digests
+from lib.image_generation import process_all_images
+from lib.podcast_generation import process_all_podcasts
 from lib.notion_publish import publish_session_outputs
 from lib.notion_cache import initialize_cache, sync_to_notion
 
@@ -82,8 +84,18 @@ def main():
         process_all_digests(openai_api_key)
         print("\nSession digest processing complete!\n")
         
-        # Step 5: Publish session outputs to Notion
-        print("Step 5: Publishing session outputs to Notion...")
+        # Step 5: Generate images from image prompts
+        print("Step 5: Generating images from image prompts...")
+        process_all_images(openai_api_key)
+        print("\nImage generation complete!\n")
+        
+        # Step 6: Generate podcasts from podcast scripts
+        print("Step 6: Generating podcasts from podcast scripts...")
+        process_all_podcasts(eleven_api_key)
+        print("\nPodcast generation complete!\n")
+        
+        # Step 7: Publish session outputs to Notion
+        print("Step 7: Publishing session outputs to Notion...")
         publish_session_outputs(base_dir)
         print("\nNotion publishing complete!\n")
         
