@@ -10,8 +10,8 @@ from typing import List, Dict
 import openai
 from openai import OpenAI
 
-from .transcript_slicing import slice_transcript
-from .reference_utils import get_player_roster
+from .slicing import slice_transcript
+from ..memory.references import get_player_roster
 
 
 def process_transcript_slice(transcript_chunk: str, openai_api_key: str, model: str = "gpt-4.1-mini") -> str:

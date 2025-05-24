@@ -24,7 +24,7 @@ from typing import List, Dict
 
 from agents import RunContextWrapper, function_tool
 from .context import SessionContext
-from .campaign_memory import list_articles_meta, latest_revision_for_date, insert_revision, ArticleMeta
+from .database import list_articles_meta, latest_revision_for_date, insert_revision, ArticleMeta
 
 
 # ---------------------------------------------------------------------------

@@ -15,15 +15,15 @@ Environment Variables:
 import os
 import sys
 import argparse
-from lib.audio_transcription import transcribe_audio
-from lib.transcript_compilation import auto_process_sessions
-from lib.slice_summarization import process_all_transcripts_to_slices
-from lib.session_digest import process_all_sessions_to_digests
-from lib.digest_processing import process_all_digests
-from lib.image_generation import process_all_images
-from lib.podcast_generation import process_all_podcasts
-from lib.notion_publish import publish_session_outputs
-from lib.notion_cache import initialize_cache, sync_to_notion
+from lib.audio.transcription import transcribe_audio
+from lib.audio.compilation import auto_process_sessions
+from lib.audio.summarization import process_all_transcripts_to_slices
+from lib.content.session_digest import process_all_sessions_to_digests
+from lib.content.digest_processing import process_all_digests
+from lib.content.image_generation import process_all_images
+from lib.content.podcast_generation import process_all_podcasts
+from lib.notion.publish import publish_session_outputs
+from lib.notion.cache import initialize_cache, sync_to_notion
 
 
 def main():

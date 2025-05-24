@@ -4,7 +4,7 @@ Cache layer for Notion databases to improve performance during agent runs.
 from datetime import datetime
 from typing import Dict, List, Optional, Literal
 
-from .notion_api import (
+from .api import (
     ensure_database_schema,
     find_database_entry,
     get_database_entries,

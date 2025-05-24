@@ -5,10 +5,10 @@ Functions for updating campaign knowledge (articles and entities) based on sessi
 
 import asyncio
 from agents import Agent, Runner
-from .memory_tools import list_articles, get_articles, update_article
-from .reference_utils import list_reference_files, retrieve_reference_files
-from .notion_tools import get_all_entities, add_new_entities, update_existing_entities
-from .context import SessionContext
+from ..memory.tools import list_articles, get_articles, update_article
+from ..memory.references import list_reference_files, retrieve_reference_files
+from ..notion.tools import get_all_entities, add_new_entities, update_existing_entities
+from ..memory.context import SessionContext
 
 
 def update_campaign_knowledge(session_date: str, openai_api_key: str, digest_content: str) -> None:

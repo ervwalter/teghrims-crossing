@@ -5,7 +5,7 @@ This file remains for backwards compatibility but will be removed in a future ve
 """
 
 # Import all functions from the new modules to maintain backwards compatibility
-from .session_digest import (
+from ..content.session_digest import (
     get_slice_content,
     get_session_slices,
     combine_slice_contents,
@@ -14,7 +14,7 @@ from .session_digest import (
     process_all_sessions_to_digests
 )
 
-from .campaign_knowledge import update_campaign_knowledge
+from ..content.campaign_knowledge import update_campaign_knowledge
 
 # Maintain the original interface but print a deprecation warning
 import warnings

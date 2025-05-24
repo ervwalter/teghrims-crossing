@@ -11,10 +11,10 @@ from pathlib import Path
 import asyncio
 
 from agents import Agent, Runner
-from .reference_utils import list_reference_files, retrieve_reference_files
-from .memory_tools import list_articles, get_articles
-from .notion_tools import get_all_entities
-from .context import SessionContext
+from ..memory.references import list_reference_files, retrieve_reference_files
+from ..memory.tools import list_articles, get_articles
+from ..notion.tools import get_all_entities
+from ..memory.context import SessionContext
 
 
 def get_session_digests() -> List[Dict]:

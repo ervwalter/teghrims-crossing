@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Union, Any, Tuple
 from notion_client import Client
 
 # Local module for Markdown to Notion conversion
-from lib.markdown_to_notion import markdown_to_notion_blocks, rich_text_from_markdown
+from .markdown import markdown_to_notion_blocks, rich_text_from_markdown
 
 # Environment variables for Notion API
 NOTION_API_KEY = os.environ.get("NOTION_API_KEY")
